@@ -1,0 +1,1442 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <!-- Meta tags for social media banners, these should be filled in appropriately as they are your "business card" -->
+  <!-- Replace the content tag with appropriate information -->
+  <meta name="description" content="DESCRIPTION META TAG">
+  <meta property="og:title" content="SOCIAL MEDIA TITLE TAG"/>
+  <meta property="og:description" content="SOCIAL MEDIA DESCRIPTION TAG TAG"/>
+  <meta property="og:url" content="URL OF THE WEBSITE"/>
+  <!-- Path to banner image, should be in the path listed below. Optimal dimenssions are 1200X630-->
+   <!-- <meta property="og:image" content="static/image/your_banner_image.png" />-->
+  <!-- <meta property="og:image:width" content="1200"/>-->
+   <!-- <meta property="og:image:height" content="630"/>-->
+
+
+  <meta name="twitter:title" content="TWITTER BANNER TITLE META TAG">
+  <meta name="twitter:description" content="TWITTER BANNER DESCRIPTION META TAG">
+  <!-- Path to banner image, should be in the path listed below. Optimal dimenssions are 1200X600-->
+  <meta name="twitter:image" content="static/images/your_twitter_banner_image.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <!-- Keywords for your paper to be indexed by-->
+  <meta name="keywords" content="KEYWORDS SHOULD BE PLACED HERE">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+  <title>A Comparative Study of Recurrent Neural Networks for Virtual Analog Audio Effects Modeling</title>
+ <!--  <link rel="icon" type="image/x-icon" href="static/images/favicon.ico">-->
+ <!--  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
+  rel="stylesheet">-->
+
+  <link rel="stylesheet" href="static/css/bulma.min.css">
+  <link rel="stylesheet" href="static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="static/css/fontawesome.all.min.css">
+  <link rel="stylesheet"
+  href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="static/css/index.css">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://documentcloud.adobe.com/view-sdk/main.js"></script>
+  <script defer src="static/js/fontawesome.all.min.js"></script>
+  <script src="static/js/bulma-carousel.min.js"></script>
+  <script src="static/js/bulma-slider.min.js"></script>
+  <script src="static/js/index.js"></script>
+</head>
+<body>
+
+
+  <section class="hero">
+    <div class="hero-body">
+      <div class="container is-max-desktop">
+        <div class="columns is-centered">
+          <div class="column has-text-centered">
+            <h1 class="title is-1 publication-title">A Comparative Study of Recurrent Neural Networks for Virtual Analog Audio Effects Modeling</h1>
+            <div class="is-size-5 publication-authors">
+              <!-- Paper authors -->
+              <span class="author-block">
+                <a href="https://www.hf.uio.no/imv/english/people/aca/temporary/riccarsi/" target="_blank">Riccardo Simionato</a>,</span>
+                <span class="author-block">
+                  <a href="https://www.hf.uio.no/imv/english/people/aca/tenured/stefanof/" target="_blank">Stefano Fasciani</a></span>
+                  <span class="author-block">
+                   <!--  <a href="THIRD AUTHOR PERSONAL LINK" target="_blank">Third Author</a> -->
+                  <!-- </span> -->
+                  </div>
+
+                  <div class="is-size-5 publication-authors">
+                    <span class="author-block">University of Oslo<br> </span>
+                    <!-- <span class="eql-cntrb"><small><br><sup>*</sup>Indicates Equal Contribution</small></span> -->
+                  </div>
+
+                  <div class="column has-text-centered">
+                    <div class="publication-links">
+                         <!-- Arxiv PDF link -->
+                      <span class="link-block">
+                        <a href="https://arxiv.org/abs/2405.04124.pdf" target="_blank"
+                        class="external-link button is-normal is-rounded is-dark">
+                        <span class="icon">
+                          <i class="fas fa-file-pdf"></i>
+                        </span>
+                        <span>Paper</span>
+                      </a>
+                    </span>
+
+
+                  <!-- Github link -->
+                  <span class="link-block">
+                    <a href="https://github.com/RiccardoVib/A-Comparative-Study-of-Recurrent-Neural-Networks-for-Virtual-Analog-Audio-Effects-Modeling" target="_blank"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="fab fa-github"></i>
+                    </span>
+                    <span>Code</span>
+                  </a>
+                </span>                
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Paper abstract -->
+<section class="section hero is-light">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Abstract</h2>
+        <div class="content has-text-justified">
+          <p>
+Analog electronic circuits are at the core of an important category of musical devices, which includes a broad range of sound synthesizers and audio effects. The nonlinear features of their passive and active electronic components give analog musical devices a distinctive timbre and sound quality, making them highly desirable. The development of software that simulates analog musical devices, known as virtual analog modeling, is a significant sub-field in audio signal processing. Artificial neural networks are a promising technique for virtual analog modeling. They have rapidly gained popularity for the emulation of analog audio effects circuits, particularly recurrent networks. While neural approaches have been successful in accurately modeling distortion circuits, they require architectural improvements that account for parameter conditioning and low-latency response. Although hybrid solutions can offer advantages, black-box approaches can still be advantageous in some contexts. In this article, we explore the application of recent machine learning advancements for virtual analog modeling. In particular, we compare State-Space models and Linear Recurrent Units against the more common Long Short-Term Memory networks. These have shown promising ability in sequence-to-sequence modeling tasks, showing a notable improvement in signal history encoding. Our comparative study uses these black-box neural modeling techniques with a variety of audio effects. We evaluate the performance and limitations of these models using multiple metrics, providing insights for future research and development. Our metrics aim to assess the models' ability to accurately replicate energy envelopes and frequency contents, with a particular focus on transients in the audio signal. To incorporate control parameters into the models, we employ the Feature-wise Linear Modulation method. Long Short-Term Memory networks exhibit better accuracy in emulating distortions and equalizers, while the State-Space model, followed by Long Short-Term Memory networks when integrated in an encoder-decoder structure, outperforms others in emulating saturation and compression. When considering long time-variant characteristics, the State-Space model demonstrates the greatest capability to track history. The Long Short-Term Memory and Linear Recurrent Unit networks present more tendency to introduce audio artifacts, in particular, the Linear Recurrent Unit, which resulted in the least appropriate modeling techniques.          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- End paper abstract -->
+
+<section class="hero is-small is-light">
+  <div class="hero-body">
+        <div class="columns is-centered has-text-centered">
+    <div class="container">
+  <h2 class="title is-3">Datasets</h2>
+<a href="https://doi.org/10.34740/kaggle/dsv/8968326"> Behringer OD300 overdrive pedal - Behringer Neutron’s overdrive module - Behringer Neutron’s filter module (LP mode) -  Helper Saturator (Tape mode) - Universal Audio Pultec EQ (<b> all from the same link</b> )  |
+<a href="https://doi.org/10.34740/kaggle/dsv/8968089"> TubeTech CL 1B & Teletronix LA-2A Dataset </a>
+      </div>
+    </div>
+     </div>
+ </section>
+
+
+  
+<section class="hero teaser">
+    <div class="columns is-centered has-text-centered">
+  <div class="container">
+        <h2 class="title is-3"> - </h2>
+  <h2 class="title is-3">OD300 Audio Examples</h2>
+      <p> The title of the waveform plot details the control parameters that range between 0 (min) and 1 (max).</p>
+      <img src="static/Overdrives/OD/0.5_0.5/WavPlotOD0.5_0.5_Spectrogram.png" alt="STFT" style="width:50%" class="center">
+      </div>
+        </div>
+</section>
+    
+<!-- audio -->
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+      <div class="columns is-centered has-text-centered">
+  <table align="center" id="myTable">
+      <tr> 
+      <th align="center" >Input</th> 
+     <th align="center" >Target</th>
+    </tr>
+<tr>
+    <td> <audio controls unmuted><source src="static/Overdrives/OD/OD_inp.mp3" type="audio/mp3"> </audio></td>
+      <td> <audio controls unmuted><source src="static/Overdrives/OD/0.5_0.5/OD0.5_0.5_tar.mp3" type="audio/mp3"> </audio></td>
+   </tr>
+  <tr> 
+    <th align="center" >LSTM</th> 
+    <th align="center" >ED</th> 
+</tr>
+  <tr>
+   <td> <audio controls unmuted><source src="static/Overdrives/OD/0.5_0.5/ODLSTM0.5_0.5_pred.mp3" type="audio/mp3"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Overdrives/OD/0.5_0.5/ODLSTM-ED0.5_0.5_pred.mp3" type="audio/mp3"> </audio></td>
+    </tr>
+      <tr> 
+    <th align="center" >LRU</th> 
+  <th align="center" >S4D</th>   
+</tr>
+  <tr>
+    <td> <audio controls unmuted><source src="static/Overdrives/OD/0.5_0.5/ODLRU0.5_0.5_pred.mp3" type="audio/wav"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Overdrives/OD/0.5_0.5/ODS4D0.5_0.5_pred.mp3" type="audio/wav"> </audio></td>
+    </tr>
+    </table>
+    </div>
+     </div>
+     </div>
+       </section>
+  
+<section class="hero teaser">
+    <div class="columns is-centered has-text-centered">
+ <div class="container">
+        <h2 class="title is-3"> - </h2>
+      <img src="static/Overdrives/OD/0.5_0.75/WavPlotOD0.5_0.75_Spectrogram.png" alt="STFT" style="width:50%" class="center">
+      </div>
+        </div>
+</section>
+    
+<!-- audio -->
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+      <div class="columns is-centered has-text-centered">
+  <table align="center" id="myTable">
+      <tr> 
+      <th align="center" >Input</th> 
+     <th align="center" >Target</th> 
+    </tr>
+<tr>
+    <td> <audio controls unmuted><source src="static/Overdrives/OD/OD_inp.mp3" type="audio/mp3"> </audio></td>
+      <td> <audio controls unmuted><source src="static/Overdrives/OD/0.5_0.75/OD0.5_0.75_tar.mp3" type="audio/mp3"> </audio></td>
+   </tr>
+  <tr> 
+            <th align="center" >LSTM</th> 
+            <th align="center" >ED</th> 
+</tr>
+  <tr>
+   <td> <audio controls unmuted><source src="static/Overdrives/OD/0.5_0.75/ODLSTM0.5_0.75_pred.mp3" type="audio/mp3"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Overdrives/OD/0.5_0.75/ODLSTM-ED0.5_0.75_pred.mp3" type="audio/mp3"> </audio></td>
+    </tr>
+      <tr> 
+            <th align="center" >LRU</th> 
+            <th align="center" >S4D</th> 
+</tr>
+  <tr>
+    <td> <audio controls unmuted><source src="static/Overdrives/OD/0.5_0.75/ODLRU0.5_0.75_pred.mp3" type="audio/wav"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Overdrives/OD/0.5_0.75/ODS4D0.5_0.75_pred.mp3" type="audio/wav"> </audio></td>
+    </tr>
+        </table>
+          </div>
+    </div>
+     </div>
+       </section>
+
+
+    <section class="hero teaser">
+  <div class="columns is-centered has-text-centered">
+    <div class="container">
+         <h2 class="title is-3"> - </h2>
+            <img src="static/Overdrives/OD/0.25_0.25/WavPlotOD0.25_0.25_Spectrogram.png" alt="STFT" style="width:50%" class="center">
+      </div>
+        </div>
+</section>
+    
+<!-- audio -->
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+  <table align="left" id="myTable">
+      <tr> 
+      <th align="center" >Input</th> 
+     <th align="center" >Target</th> 
+    </tr>
+<tr>
+    <td> <audio controls unmuted><source src="static/Overdrives/OD/OD_inp.mp3" type="audio/mp3"> </audio></td>
+      <td> <audio controls unmuted><source src="static/Overdrives/OD/0.25_0.25/OD0.25_0.25_tar.mp3" type="audio/mp3"> </audio></td>
+   </tr>
+  <tr> 
+            <th align="center" >LSTM</th> 
+            <th align="center" >ED</th> 
+</tr>
+  <tr>
+   <td> <audio controls unmuted><source src="static/Overdrives/OD/0.25_0.25/ODLSTM0.25_0.25_pred.mp3" type="audio/mp3"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Overdrives/OD/0.25_0.25/ODLSTM-ED0.25_0.25_pred.mp3" type="audio/mp3"> </audio></td>
+    </tr>
+      <tr> 
+            <th align="center" >LRU</th> 
+            <th align="center" >S4D</th> 
+</tr>
+  <tr>
+    <td> <audio controls unmuted><source src="static/Overdrives/OD/0.25_0.25/ODLRU0.25_0.25_pred.mp3" type="audio/wav"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Overdrives/OD/0.25_0.25/ODS4D0.25_0.25_pred.mp3" type="audio/wav"> </audio></td>
+    </tr>
+        </table>
+    </div>
+     </div>
+       </section>
+
+
+
+      <section class="hero teaser">
+  <div class="columns is-centered has-text-centered">
+    <div class="container">
+         <h2 class="title is-3"> - </h2>
+            <img src="static/Overdrives/OD/0.25_0.75/WavPlotOD0.25_0.75_Spectrogram.png" alt="STFT" style="width:50%" class="center">
+      </div>
+        </div>
+</section>
+    
+<!-- audio -->
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+  <table align="left" id="myTable">
+      <tr> 
+      <th align="center" >Input</th> 
+     <th align="center" >Target</th> 
+    </tr>
+<tr>
+    <td> <audio controls unmuted><source src="static/Overdrives/OD/OD_inp.mp3" type="audio/mp3"> </audio></td>
+      <td> <audio controls unmuted><source src="static/Overdrives/OD/0.25_0.75/OD0.25_0.75_tar.mp3" type="audio/mp3"> </audio></td>
+   </tr>
+  <tr> 
+            <th align="center" >LSTM</th> 
+            <th align="center" >ED</th> 
+</tr>
+  <tr>
+   <td> <audio controls unmuted><source src="static/Overdrives/OD/0.25_0.75/ODLSTM0.25_0.75_pred.mp3" type="audio/mp3"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Overdrives/OD/0.25_0.75/ODLSTM-ED0.25_0.75_pred.mp3" type="audio/mp3"> </audio></td>
+    </tr>
+      <tr> 
+            <th align="center" >LRU</th> 
+            <th align="center" >S4D</th> 
+</tr>
+  <tr>
+    <td> <audio controls unmuted><source src="static/Overdrives/OD/0.25_0.75/ODLRU0.25_0.75_pred.mp3" type="audio/wav"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Overdrives/OD/0.25_0.75/ODS4D0.25_0.75_pred.mp3" type="audio/wav"> </audio></td>
+    </tr>
+        </table>
+    </div>
+     </div>
+       </section>
+
+      <section class="hero teaser">
+  <div class="columns is-centered has-text-centered">
+    <div class="container">
+         <h2 class="title is-3"> - </h2>
+            <img src="static/Overdrives/OD/0.75_0.25/WavPlotOD0.75_0.25_Spectrogram.png" alt="STFT" style="width:50%" class="center">
+      </div>
+        </div>
+</section>
+    
+<!-- audio -->
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+  <table align="left" id="myTable">
+      <tr> 
+      <th align="center" >Input</th> 
+     <th align="center" >Target</th> 
+    </tr>
+<tr>
+    <td> <audio controls unmuted><source src="static/Overdrives/OD/OD_inp.mp3" type="audio/mp3"> </audio></td>
+      <td> <audio controls unmuted><source src="static/Overdrives/OD/0.75_0.25/0.75_0.25_tar.mp3" type="audio/mp3"> </audio></td>
+   </tr>
+  <tr> 
+            <th align="center" >LSTM</th> 
+            <th align="center" >ED</th> 
+</tr>
+  <tr>
+   <td> <audio controls unmuted><source src="static/Overdrives/OD/0.75_0.25/ODLSTM0.75_0.25_pred.mp3" type="audio/mp3"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Overdrives/OD/0.75_0.25/ODLSTM-ED0.75_0.25_pred.mp3" type="audio/mp3"> </audio></td>
+    </tr>
+      <tr> 
+            <th align="center" >LRU</th> 
+            <th align="center" >S4D</th> 
+</tr>
+  <tr>
+    <td> <audio controls unmuted><source src="static/Overdrives/OD/0.75_0.25/ODLRU0.75_0.25_pred.mp3" type="audio/wav"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Overdrives/OD/0.75_0.25/ODS4D0.75_0.25_pred.mp3" type="audio/wav"> </audio></td>
+    </tr>
+        </table>
+    </div>
+     </div>
+       </section>
+
+
+<section class="hero teaser">
+  <div class="columns is-centered has-text-centered">
+    <div class="container">
+      <h2 class="title is-3"> - </h2>
+  <h2 class="title is-3">Neutron's Overdrive Audio Examples</h2>
+      <p> The title of the waveform plot details the control parameters that range between 0 (min) and 1 (max).</p>
+      <img src="static/Overdrives/ODNeutron/0.3_0.4/WavPlotODNeutron0.3_0.4_Spectrogram.png" alt="STFT" style="width:50%" class="center">
+      </div>
+        </div>
+</section>
+    
+<!-- audio -->
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+  <table align="left" id="myTable">
+      <tr> 
+      <th align="center" >Input</th> 
+     <th align="center" >Target</th> 
+    </tr>
+<tr>
+    <td> <audio controls unmuted><source src="static/Overdrives/ODNeutron/ODNeutron_inp.mp3" type="audio/mp3"> </audio></td>
+      <td> <audio controls unmuted><source src="static/Overdrives/ODNeutron/0.3_0.4/ODNeutron0.3_0.4_tar.mp3" type="audio/mp3"> </audio></td>
+   </tr>
+  <tr> 
+            <th align="center" >LSTM</th> 
+            <th align="center" >ED</th> 
+</tr>
+  <tr>
+   <td> <audio controls unmuted><source src="static/Overdrives/ODNeutron/0.3_0.4/ODNeutronLSTM0.3_0.4_pred.mp3" type="audio/mp3"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Overdrives/ODNeutron/0.3_0.4/ODNeutronLSTM-ED0.3_0.4_pred.mp3" type="audio/mp3"> </audio></td>
+    </tr>
+      <tr> 
+            <th align="center" >LRU</th> 
+            <th align="center" >S4D</th> 
+</tr>
+  <tr>
+    <td> <audio controls unmuted><source src="static/Overdrives/ODNeutron/0.3_0.4/ODNeutronLRU0.3_0.4_pred.mp3" type="audio/wav"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Overdrives/ODNeutron/0.3_0.4/ODNeutronS4D0.3_0.4_pred.mp3" type="audio/wav"> </audio></td>
+    </tr>
+        </table>
+    </div>
+     </div>
+       </section>
+
+  <section class="hero teaser">
+  <div class="columns is-centered has-text-centered">
+    <div class="container">
+      <h2 class="title is-3"> - </h2>
+            <img src="static/Overdrives/ODNeutron/0.4_0.2/WavPlotODNeutron0.4_0.2_Spectrogram.png" alt="STFT" style="width:50%" class="center">
+      </div>
+        </div>
+</section>
+    
+<!-- audio -->
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+  <table align="left" id="myTable">
+      <tr> 
+      <th align="center" >Input</th> 
+     <th align="center" >Target</th> 
+    </tr>
+<tr>
+    <td> <audio controls unmuted><source src="static/Overdrives/ODNeutron/ODNeutron_inp.mp3" type="audio/mp3"> </audio></td>
+      <td> <audio controls unmuted><source src="static/Overdrives/ODNeutron/0.4_0.2/ODNeutron0.4_0.2_tar.mp3" type="audio/mp3"> </audio></td>
+   </tr>
+  <tr> 
+            <th align="center" >LSTM</th> 
+            <th align="center" >ED</th> 
+</tr>
+  <tr>
+   <td> <audio controls unmuted><source src="static/Overdrives/ODNeutron/0.4_0.2/ODNeutronLSTM0.4_0.2_pred.mp3" type="audio/mp3"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Overdrives/ODNeutron/0.4_0.2/ODNeutronLSTM-ED0.4_0.2_pred.mp3" type="audio/mp3"> </audio></td>
+    </tr>
+      <tr> 
+            <th align="center" >LRU</th> 
+            <th align="center" >S4D</th> 
+</tr>
+  <tr>
+    <td> <audio controls unmuted><source src="static/Overdrives/ODNeutron/0.4_0.2/ODNeutronLRU0.4_0.2_pred.mp3" type="audio/wav"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Overdrives/ODNeutron/0.4_0.2/ODNeutronS4D0.4_0.2_pred.mp3" type="audio/wav"> </audio></td>
+    </tr>
+        </table>
+    </div>
+     </div>
+       </section>
+
+    <section class="hero teaser">
+  <div class="columns is-centered has-text-centered">
+    <div class="container">
+            <h2 class="title is-3"> - </h2>
+            <img src="static/Overdrives/ODNeutron/0.5_0.7/WavPlotODNeutron0.5_0.7_Spectrogram.png" alt="STFT" style="width:50%" class="center">
+      </div>
+        </div>
+</section>
+    
+<!-- audio -->
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+  <table align="left" id="myTable">
+      <tr> 
+      <th align="center" >Input</th> 
+     <th align="center" >Target</th> 
+    </tr>
+<tr>
+    <td> <audio controls unmuted><source src="static/Overdrives/ODNeutron/ODNeutron_inp.mp3" type="audio/mp3"> </audio></td>
+      <td> <audio controls unmuted><source src="static/Overdrives/ODNeutron/0.5_0.7/ODNeutron0.5_0.7_tar.mp3" type="audio/mp3"> </audio></td>
+   </tr>
+  <tr> 
+            <th align="center" >LSTM</th> 
+            <th align="center" >ED</th> 
+</tr>
+  <tr>
+   <td> <audio controls unmuted><source src="static/Overdrives/ODNeutron/0.5_0.7/ODNeutronLSTM0.5_0.7_pred.mp3" type="audio/mp3"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Overdrives/ODNeutron/0.5_0.7/ODNeutronLSTM-ED0.5_0.7_pred.mp3" type="audio/mp3"> </audio></td>
+    </tr>
+      <tr> 
+            <th align="center" >LRU</th> 
+            <th align="center" >S4D</th> 
+</tr>
+  <tr>
+    <td> <audio controls unmuted><source src="static/Overdrives/ODNeutron/0.5_0.7/ODNeutronLRU0.5_0.7_pred.mp3" type="audio/wav"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Overdrives/ODNeutron/0.5_0.7/ODNeutronS4D0.5_0.7_pred.mp3" type="audio/wav"> </audio></td>
+    </tr>
+        </table>
+    </div>
+     </div>
+       </section>
+
+
+
+      <section class="hero teaser">
+  <div class="columns is-centered has-text-centered">
+    <div class="container">
+            <h2 class="title is-3"> - </h2>
+            <img src="static/Overdrives/ODNeutron/0.8_0.3/WavPlotODNeutron0.8_0.3_Spectrogram.png" alt="STFT" style="width:50%" class="center">
+      </div>
+        </div>
+</section>
+    
+<!-- audio -->
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+  <table align="left" id="myTable">
+      <tr> 
+      <th align="center" >Input</th> 
+     <th align="center" >Target</th> 
+    </tr>
+<tr>
+    <td> <audio controls unmuted><source src="static/Overdrives/ODNeutron/ODNeutron_inp.mp3" type="audio/mp3"> </audio></td>
+      <td> <audio controls unmuted><source src="static/Overdrives/ODNeutron/0.8_0.3/ODNeutron0.8_0.3_tar.mp3" type="audio/mp3"> </audio></td>
+   </tr>
+  <tr> 
+            <th align="center" >LSTM</th> 
+            <th align="center" >ED</th> 
+</tr>
+  <tr>
+   <td> <audio controls unmuted><source src="static/Overdrives/ODNeutron/0.8_0.3/ODNeutronLSTM0.8_0.3_pred.mp3" type="audio/mp3"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Overdrives/ODNeutron/0.8_0.3/ODNeutronLSTM-ED0.8_0.3_pred.mp3" type="audio/mp3"> </audio></td>
+    </tr>
+      <tr> 
+            <th align="center" >LRU</th> 
+            <th align="center" >S4D</th> 
+</tr>
+  <tr>
+    <td> <audio controls unmuted><source src="static/Overdrives/ODNeutron/0.8_0.3/ODNeutronLRU0.8_0.3_pred.mp3" type="audio/wav"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Overdrives/ODNeutron/0.8_0.3/ODNeutronS4D0.8_0.3_pred.mp3" type="audio/wav"> </audio></td>
+    </tr>
+        </table>
+    </div>
+     </div>
+       </section>
+
+      <section class="hero teaser">
+  <div class="columns is-centered has-text-centered">
+    <div class="container">
+            <h2 class="title is-3"> - </h2>
+            <img src="static/Overdrives/ODNeutron/0.9_0.6/WavPlotODNeutron0.9_0.6_Spectrogram.png" alt="STFT" style="width:50%" class="center">
+      </div>
+        </div>
+</section>
+    
+<!-- audio -->
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+  <table align="left" id="myTable">
+      <tr> 
+      <th align="center" >Input</th> 
+     <th align="center" >Target</th> 
+    </tr>
+<tr>
+    <td> <audio controls unmuted><source src="static/Overdrives/ODNeutron/ODNeutron_inp.mp3" type="audio/mp3"> </audio></td>
+      <td> <audio controls unmuted><source src="static/Overdrives/ODNeutron/0.9_0.6/ODNeutron0.9_0.6_tar.mp3" type="audio/mp3"> </audio></td>
+   </tr>
+  <tr> 
+            <th align="center" >LSTM</th> 
+            <th align="center" >ED</th> 
+</tr>
+  <tr>
+   <td> <audio controls unmuted><source src="static/Overdrives/ODNeutron/0.9_0.6/ODNeutronLSTM0.9_0.6_pred.mp3" type="audio/mp3"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Overdrives/ODNeutron/0.9_0.6/ODNeutronLSTM-ED0.9_0.6_pred.mp3" type="audio/mp3"> </audio></td>
+    </tr>
+      <tr> 
+            <th align="center" >LRU</th> 
+            <th align="center" >S4D</th> 
+</tr>
+  <tr>
+    <td> <audio controls unmuted><source src="static/Overdrives/ODNeutron/0.9_0.6/ODNeutronLRU0.9_0.6_pred.mp3" type="audio/wav"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Overdrives/ODNeutron/0.9_0.6/ODNeutronS4D0.9_0.6_pred.mp3" type="audio/wav"> </audio></td>
+    </tr>
+        </table>
+    </div>
+     </div>
+       </section>
+  
+<section class="hero teaser">
+  <div class="columns is-centered has-text-centered">
+    <div class="container">
+      <h2 class="title is-3"> - </h2>
+  <h2 class="title is-3">Helper Saturator Audio Examples</h2>
+      <p> The title of the waveform plot details the control parameters that range between 0 (min) and 1 (max).</p>
+      <img src="static/Saturators/Saturator/0.25/WavPlotSaturator0.25_Spectrogram.png" alt="STFT" style="width:50%" class="center">
+      </div>
+        </div>
+</section>
+    
+<!-- audio -->
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+  <table align="left" id="myTable">
+      <tr> 
+      <th align="center" >Input</th> 
+     <th align="center" >Target</th> 
+    </tr>
+<tr>
+    <td> <audio controls unmuted><source src="static/Saturators/Saturator/Saturator_inp.mp3" type="audio/mp3"> </audio></td>
+      <td> <audio controls unmuted><source src="static/Saturators/Saturator/0.25/Saturator0.25_tar.mp3" type="audio/mp3"> </audio></td>
+   </tr>
+  <tr> 
+            <th align="center" >LSTM</th> 
+            <th align="center" >ED</th> 
+</tr>
+  <tr>
+   <td> <audio controls unmuted><source src="static/Saturators/Saturator/0.4/SaturatorLSTM0.4_pred.mp3" type="audio/mp3"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Saturators/Saturator/0.4/SaturatorLSTM-ED0.4_pred.mp3" type="audio/mp3"> </audio></td>
+    </tr>
+      <tr> 
+            <th align="center" >LRU</th> 
+            <th align="center" >S4D</th> 
+</tr>
+  <tr>
+    <td> <audio controls unmuted><source src="static/Saturators/Saturator/0.4/SaturatorLRU0.4_pred.mp3" type="audio/wav"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Saturators/Saturator/0.4/SaturatorS4D0.4_pred.mp3" type="audio/wav"> </audio></td>
+    </tr>
+        </table>
+    </div>
+     </div>
+       </section>
+
+  <section class="hero teaser">
+  <div class="columns is-centered has-text-centered">
+    <div class="container">
+      <h2 class="title is-3"> - </h2>
+            <img src="static/Saturators/Saturator/0.55/WavPlotSaturator0.55_Spectrogram.png" alt="STFT" style="width:50%" class="center">
+      </div>
+        </div>
+</section>
+    
+<!-- audio -->
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+  <table align="left" id="myTable">
+      <tr> 
+      <th align="center" >Input</th> 
+     <th align="center" >Target</th> 
+    </tr>
+<tr>
+    <td> <audio controls unmuted><source src="static/Saturators/Saturator/Saturator_inp.mp3" type="audio/mp3"> </audio></td>
+      <td> <audio controls unmuted><source src="static/Saturators/Saturator/0.55/Saturator0.55_tar.mp3" type="audio/mp3"> </audio></td>
+   </tr>
+  <tr> 
+            <th align="center" >LSTM</th> 
+            <th align="center" >ED</th> 
+</tr>
+  <tr>
+   <td> <audio controls unmuted><source src="static/Saturators/Saturator/0.55/SaturatorLSTM0.55_pred.mp3" type="audio/mp3"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Saturators/Saturator/0.55/SaturatorLSTM-ED0.55_pred.mp3" type="audio/mp3"> </audio></td>
+    </tr>
+      <tr> 
+            <th align="center" >LRU</th> 
+            <th align="center" >S4D</th> 
+</tr>
+  <tr>
+    <td> <audio controls unmuted><source src="static/Saturators/Saturator/0.55/SaturatorLRU0.55_pred.mp3" type="audio/wav"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Saturators/Saturator/0.55/SaturatorS4D0.55_pred.mp3" type="audio/wav"> </audio></td>
+    </tr>
+        </table>
+    </div>
+     </div>
+       </section>
+
+    <section class="hero teaser">
+  <div class="columns is-centered has-text-centered">
+    <div class="container">
+            <h2 class="title is-3"> - </h2>
+            <img src="static/Saturators/Saturator/0.8/WavPlotSaturator0.8_Spectrogram.png" alt="STFT" style="width:50%" class="center">
+      </div>
+        </div>
+</section>
+    
+<!-- audio -->
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+  <table align="left" id="myTable">
+      <tr> 
+      <th align="center" >Input</th> 
+     <th align="center" >Target</th> 
+    </tr>
+<tr>
+    <td> <audio controls unmuted><source src="static/Saturators/Saturator/Saturator_inp.mp3" type="audio/mp3"> </audio></td>
+      <td> <audio controls unmuted><source src="static/Saturators/Saturator/0.8/Saturator0.8_tar.mp3" type="audio/mp3"> </audio></td>
+   </tr>
+  <tr> 
+            <th align="center" >LSTM</th> 
+            <th align="center" >ED</th> 
+</tr>
+  <tr>
+   <td> <audio controls unmuted><source src="static/Saturators/Saturator/0.8/SaturatorLSTM0.8_pred.mp3" type="audio/mp3"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Saturators/Saturator/0.8/SaturatorLSTM-ED0.8_pred.mp3" type="audio/mp3"> </audio></td>
+    </tr>
+      <tr> 
+            <th align="center" >LRU</th> 
+            <th align="center" >S4D</th> 
+</tr>
+  <tr>
+    <td> <audio controls unmuted><source src="static/Saturators/Saturator/0.8/SaturatorLRU0.8_pred.mp3" type="audio/wav"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Saturators/Saturator/0.8/SaturatorS4D0.8_pred.mp3" type="audio/wav"> </audio></td>
+    </tr>
+        </table>
+    </div>
+     </div>
+       </section>
+
+<section class="hero teaser">
+  <div class="columns is-centered has-text-centered">
+    <div class="container">
+      <h2 class="title is-3"> - </h2>
+  <h2 class="title is-3">Pultec Equalizer Audio Examples</h2>
+      <p> The title of the waveform plot details the control parameters that range between 0 (min) and 1 (max).</p>
+      <img src="static/Filter_Eq/Pultec/0.125_0.625/WavPlotPultec0.125_0.625_Spectrogram.png" alt="STFT" style="width:50%" class="center">
+      </div>
+        </div>
+</section>
+    
+<!-- audio -->
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+  <table align="left" id="myTable">
+      <tr> 
+      <th align="center" >Input</th> 
+     <th align="center" >Target</th> 
+    </tr>
+<tr>
+    <td> <audio controls unmuted><source src="static/Filter_Eq/Pultec/Pultec_inp.mp3" type="audio/mp3"> </audio></td>
+      <td> <audio controls unmuted><source src="static/Filter_Eq/Pultec/0.125_0.625/Pultec0.125_0.625_tar.mp3" type="audio/mp3"> </audio></td>
+   </tr>
+  <tr> 
+            <th align="center" >LSTM</th> 
+            <th align="center" >ED</th> 
+</tr>
+  <tr>
+   <td> <audio controls unmuted><source src="static/Filter_Eq/Pultec/0.125_0.625/PultecLSTM0.125_0.625_pred.mp3" type="audio/mp3"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Filter_Eq/Pultec/0.125_0.625/PultecLSTM-ED0.125_0.625_pred.mp3" type="audio/mp3"> </audio></td>
+    </tr>
+      <tr> 
+            <th align="center" >LRU</th> 
+            <th align="center" >S4D</th> 
+</tr>
+  <tr>
+    <td> <audio controls unmuted><source src="static/Filter_Eq/Pultec/0.125_0.625/PultecLRU0.125_0.625_pred.mp3" type="audio/wav"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Filter_Eq/Pultec/0.125_0.625/PultecS4D0.125_0.625_pred.mp3" type="audio/wav"> </audio></td>
+    </tr>
+        </table>
+    </div>
+     </div>
+       </section>
+
+  <section class="hero teaser">
+  <div class="columns is-centered has-text-centered">
+    <div class="container">
+      <h2 class="title is-3"> - </h2>
+            <img src="static/Filter_Eq/Pultec/0.375_0.875/WavPlotPultec0.375_0.875_Spectrogram.png" alt="STFT" style="width:50%" class="center">
+      </div>
+        </div>
+</section>
+    
+<!-- audio -->
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+  <table align="left" id="myTable">
+      <tr> 
+      <th align="center" >Input</th> 
+     <th align="center" >Target</th> 
+    </tr>
+<tr>
+    <td> <audio controls unmuted><source src="static/Filter_Eq/Pultec/Pultec_inp.mp3" type="audio/mp3"> </audio></td>
+      <td> <audio controls unmuted><source src="static/Filter_Eq/Pultec/0.375_0.875/Pultec0.375_0.875_tar.mp3" type="audio/mp3"> </audio></td>
+   </tr>
+  <tr> 
+            <th align="center" >LSTM</th> 
+            <th align="center" >ED</th> 
+</tr>
+  <tr>
+   <td> <audio controls unmuted><source src="static/Filter_Eq/Pultec/0.375_0.875/PultecLSTM0.375_0.875_pred.mp3" type="audio/mp3"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Filter_Eq/Pultec/0.375_0.875/PultecLSTM-ED0.375_0.875_pred.mp3" type="audio/mp3"> </audio></td>
+    </tr>
+      <tr> 
+            <th align="center" >LRU</th> 
+            <th align="center" >S4D</th> 
+</tr>
+  <tr>
+    <td> <audio controls unmuted><source src="static/Filter_Eq/Pultec/0.375_0.875/PultecLRU0.375_0.875_pred.mp3" type="audio/wav"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Filter_Eq/Pultec/0.375_0.875/PultecS4D0.375_0.875_pred.mp3" type="audio/wav"> </audio></td>
+    </tr>
+        </table>
+    </div>
+     </div>
+       </section>
+
+    <section class="hero teaser">
+  <div class="columns is-centered has-text-centered">
+    <div class="container">
+            <h2 class="title is-3"> - </h2>
+            <img src="static/Filter_Eq/Pultec/0.625_0.375/WavPlotPultec0.625_0.375_Spectrogram.png" alt="STFT" style="width:50%" class="center">
+      </div>
+        </div>
+</section>
+    
+<!-- audio -->
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+  <table align="left" id="myTable">
+      <tr> 
+      <th align="center" >Input</th> 
+     <th align="center" >Target</th> 
+    </tr>
+<tr>
+    <td> <audio controls unmuted><source src="static/Filter_Eq/Pultec/Pultec_inp.mp3" type="audio/mp3"> </audio></td>
+      <td> <audio controls unmuted><source src="static/Filter_Eq/Pultec/0.625_0.375/Pultec0.625_0.375_tar.mp3" type="audio/mp3"> </audio></td>
+   </tr>
+  <tr> 
+            <th align="center" >LSTM</th> 
+            <th align="center" >ED</th> 
+</tr>
+  <tr>
+   <td> <audio controls unmuted><source src="static/Filter_Eq/Pultec/0.625_0.375/PultecLSTM0.625_0.375_pred.mp3" type="audio/mp3"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Filter_Eq/Pultec/0.625_0.375/PultecLSTM-ED0.625_0.375_pred.mp3" type="audio/mp3"> </audio></td>
+    </tr>
+      <tr> 
+            <th align="center" >LRU</th> 
+            <th align="center" >S4D</th> 
+</tr>
+  <tr>
+    <td> <audio controls unmuted><source src="static/Filter_Eq/Pultec/0.625_0.375/PultecLRU0.625_0.375_pred.mp3" type="audio/wav"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Filter_Eq/Pultec/0.625_0.375/PultecS4D0.625_0.375_pred.mp3" type="audio/wav"> </audio></td>
+    </tr>
+        </table>
+    </div>
+     </div>
+       </section>
+    <section class="hero teaser">
+  <div class="columns is-centered has-text-centered">
+    <div class="container">
+      <h2 class="title is-3"> - </h2>
+            <img src="static/Filter_Eq/Pultec/0.625_0.375/WavPlotPultec0.625_0.375_Spectrogram.png" alt="STFT" style="width:50%" class="center">
+      </div>
+        </div>
+</section>
+    
+<!-- audio -->
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+  <table align="left" id="myTable">
+      <tr> 
+      <th align="center" >Input</th> 
+     <th align="center" >Target</th> 
+    </tr>
+<tr>
+    <td> <audio controls unmuted><source src="static/Filter_Eq/Pultec/Pultec_inp.mp3" type="audio/mp3"> </audio></td>
+      <td> <audio controls unmuted><source src="static/Filter_Eq/Pultec/0.625_0.375/Pultec0.625_0.375_tar.mp3" type="audio/mp3"> </audio></td>
+   </tr>
+  <tr> 
+            <th align="center" >LSTM</th> 
+            <th align="center" >ED</th> 
+</tr>
+  <tr>
+   <td> <audio controls unmuted><source src="static/Filter_Eq/Pultec/0.625_0.375/PultecLSTM0.625_0.375_pred.mp3" type="audio/mp3"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Filter_Eq/Pultec/0.625_0.375/PultecLSTM-ED0.625_0.375_pred.mp3" type="audio/mp3"> </audio></td>
+    </tr>
+      <tr> 
+            <th align="center" >LRU</th> 
+            <th align="center" >S4D</th> 
+</tr>
+  <tr>
+    <td> <audio controls unmuted><source src="static/Filter_Eq/Pultec/0.625_0.375/PultecLRU0.625_0.375_pred.mp3" type="audio/wav"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Filter_Eq/Pultec/0.625_0.375/PultecS4D0.625_0.375_pred.mp3" type="audio/wav"> </audio></td>
+    </tr>
+        </table>
+    </div>
+     </div>
+       </section>
+
+    <section class="hero teaser">
+  <div class="columns is-centered has-text-centered">
+    <div class="container">
+            <h2 class="title is-3"> - </h2>
+            <img src="static/Filter_Eq/Pultec/0.75_1.0/WavPlotPultec0.75_1.0_Spectrogram.png" alt="STFT" style="width:50%" class="center">
+      </div>
+        </div>
+</section>
+    
+<!-- audio -->
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+  <table align="left" id="myTable">
+      <tr> 
+      <th align="center" >Input</th> 
+     <th align="center" >Target</th> 
+    </tr>
+<tr>
+    <td> <audio controls unmuted><source src="static/Filter_Eq/Pultec/Pultec_inp.mp3" type="audio/mp3"> </audio></td>
+      <td> <audio controls unmuted><source src="static/Filter_Eq/Pultec/0.75_1.0/Pultec0.75_1.0_tar.mp3" type="audio/mp3"> </audio></td>
+   </tr>
+  <tr> 
+            <th align="center" >LSTM</th> 
+            <th align="center" >ED</th> 
+</tr>
+  <tr>
+   <td> <audio controls unmuted><source src="static/Filter_Eq/Pultec/0.75_1.0/PultecLSTM0.75_1.0_pred.mp3" type="audio/mp3"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Filter_Eq/Pultec/0.75_1.0/PultecLSTM-ED0.75_1.0_pred.mp3" type="audio/mp3"> </audio></td>
+    </tr>
+      <tr> 
+            <th align="center" >LRU</th> 
+            <th align="center" >S4D</th> 
+</tr>
+  <tr>
+    <td> <audio controls unmuted><source src="static/Filter_Eq/Pultec/0.75_1.0/PultecLRU0.75_1.0_pred.mp3" type="audio/wav"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Filter_Eq/Pultec/0.75_1.0/PultecS4D0.75_1.0_pred.mp3" type="audio/wav"> </audio></td>
+    </tr>
+        </table>
+    </div>
+     </div>
+       </section>
+
+
+  <section class="hero teaser">
+  <div class="columns is-centered has-text-centered">
+    <div class="container">
+      <h2 class="title is-3"> - </h2>
+  <h2 class="title is-3">Neutron Low Pass Filter Audio Examples</h2>
+      <p> The title of the waveform plot details the control parameters that range between 0 (min) and 1 (max).</p>
+      <img src="static/Filter_Eq/FilterNeutron/0.1_0.2/WavPlotFilterNeutron0.1_0.2_Spectrogram.png" alt="STFT" style="width:50%" class="center">
+      </div>
+        </div>
+</section>
+    
+<!-- audio -->
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+  <table align="left" id="myTable">
+      <tr> 
+      <th align="center" >Input</th> 
+     <th align="center" >Target</th> 
+    </tr>
+<tr>
+    <td> <audio controls unmuted><source src="static/Filter_Eq/FilterNeutron/FilterNeutron_inp.mp3" type="audio/mp3"> </audio></td>
+      <td> <audio controls unmuted><source src="static/Filter_Eq/FilterNeutron/0.1_0.2/FilterNeutron0.1_0.2_tar.mp3" type="audio/mp3"> </audio></td>
+   </tr>
+  <tr> 
+            <th align="center" >LSTM</th> 
+            <th align="center" >ED</th> 
+</tr>
+  <tr>
+   <td> <audio controls unmuted><source src="static/Filter_Eq/FilterNeutron/0.1_0.2/FilterNeutronLSTM0.1_0.2_pred.mp3" type="audio/mp3"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Filter_Eq/FilterNeutron/0.1_0.2/FilterNeutronLSTM-ED0.1_0.2_pred.mp3" type="audio/mp3"> </audio></td>
+    </tr>
+      <tr> 
+            <th align="center" >LRU</th> 
+            <th align="center" >S4D</th> 
+</tr>
+  <tr>
+    <td> <audio controls unmuted><source src="static/Filter_Eq/FilterNeutron/0.1_0.2/FilterNeutronLRU0.1_0.2_pred.mp3" type="audio/wav"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Filter_Eq/FilterNeutron/0.1_0.2/FilterNeutronS4D0.1_0.2_pred.mp3" type="audio/wav"> </audio></td>
+    </tr>
+        </table>
+    </div>
+     </div>
+       </section>
+
+  <section class="hero teaser">
+  <div class="columns is-centered has-text-centered">
+    <div class="container">
+      <h2 class="title is-3"> - </h2>
+            <img src="static/Filter_Eq/FilterNeutron/0.5_0.5/WavPlotFilterNeutron0.5_0.5_Spectrogram.png" alt="STFT" style="width:50%" class="center">
+      </div>
+        </div>
+</section>
+    
+<!-- audio -->
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+  <table align="left" id="myTable">
+      <tr> 
+      <th align="center" >Input</th> 
+     <th align="center" >Target</th> 
+    </tr>
+<tr>
+    <td> <audio controls unmuted><source src="static/Filter_Eq/FilterNeutron/FilterNeutron_inp.mp3" type="audio/mp3"> </audio></td>
+      <td> <audio controls unmuted><source src="static/Filter_Eq/FilterNeutron/0.5_0.5/FilterNeutron0.5_0.5_tar.mp3" type="audio/mp3"> </audio></td>
+   </tr>
+  <tr> 
+            <th align="center" >LSTM</th> 
+            <th align="center" >ED</th> 
+</tr>
+  <tr>
+   <td> <audio controls unmuted><source src="static/Filter_Eq/FilterNeutron/0.5_0.5/FilterNeutronLSTM0.5_0.5_pred.mp3" type="audio/mp3"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Filter_Eq/FilterNeutron/0.5_0.5/FilterNeutronLSTM-ED0.5_0.5_pred.mp3" type="audio/mp3"> </audio></td>
+    </tr>
+      <tr> 
+            <th align="center" >LRU</th> 
+            <th align="center" >S4D</th> 
+</tr>
+  <tr>
+    <td> <audio controls unmuted><source src="static/Filter_Eq/FilterNeutron/0.5_0.5/FilterNeutronLRU0.5_0.5_pred.mp3" type="audio/wav"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Filter_Eq/FilterNeutron/0.5_0.5/FilterNeutronS4D0.5_0.5_pred.mp3" type="audio/wav"> </audio></td>
+    </tr>
+        </table>
+    </div>
+     </div>
+       </section>
+
+    <section class="hero teaser">
+  <div class="columns is-centered has-text-centered">
+    <div class="container">
+            <h2 class="title is-3"> - </h2>
+            <img src="static/Filter_Eq/FilterNeutron/0.7_0.6/WavPlotFilterNeutron0.7_0.6_Spectrogram.png" alt="STFT" style="width:50%" class="center">
+      </div>
+        </div>
+</section>
+
+  <!-- audio -->
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+  <table align="left" id="myTable">
+      <tr> 
+      <th align="center" >Input</th> 
+     <th align="center" >Target</th> 
+    </tr>
+<tr>
+    <td> <audio controls unmuted><source src="static/Filter_Eq/FilterNeutron/FilterNeutron_inp.mp3" type="audio/mp3"> </audio></td>
+      <td> <audio controls unmuted><source src="static/Filter_Eq/FilterNeutron/0.7_0.6/FilterNeutron0.7_0.6_tar.mp3" type="audio/mp3"> </audio></td>
+   </tr>
+  <tr> 
+            <th align="center" >LSTM</th> 
+            <th align="center" >ED</th> 
+</tr>
+  <tr>
+   <td> <audio controls unmuted><source src="static/Filter_Eq/FilterNeutron/0.7_0.6/FilterNeutronLSTM0.7_0.6_pred.mp3" type="audio/mp3"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Filter_Eq/FilterNeutron/0.7_0.6/FilterNeutronLSTM-ED0.7_0.6_pred.mp3" type="audio/mp3"> </audio></td>
+    </tr>
+      <tr> 
+            <th align="center" >LRU</th> 
+            <th align="center" >S4D</th> 
+</tr>
+  <tr>
+    <td> <audio controls unmuted><source src="static/Filter_Eq/FilterNeutron/0.7_0.6/FilterNeutronLRU0.7_0.6_pred.mp3" type="audio/wav"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Filter_Eq/FilterNeutron/0.7_0.6/FilterNeutronS4D0.7_0.6_pred.mp3" type="audio/wav"> </audio></td>
+    </tr>
+        </table>
+    </div>
+     </div>
+       </section>
+
+  <section class="hero teaser">
+  <div class="columns is-centered has-text-centered">
+    <div class="container">
+      <h2 class="title is-3"> - </h2>
+  <h2 class="title is-3">Teletronix LA-2A Audio Examples</h2>
+      <p> The title of the waveform plot details the control parameters that range between 0 (min) and 1 (max).</p>
+      <img src="static/Comp/LA2A/0_0.65/WavPlotLA2A0.0_65.0_Spectrogram.png" alt="STFT" style="width:50%" class="center">
+      </div>
+        </div>
+</section>
+    
+<!-- audio -->
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+  <table align="left" id="myTable">
+      <tr> 
+      <th align="center" >Input</th> 
+     <th align="center" >Target</th> 
+    </tr>
+<tr>
+    <td> <audio controls unmuted><source src="static/Comp/LA2A/LA2A_inp.mp3" type="audio/mp3"> </audio></td>
+      <td> <audio controls unmuted><source src="static/Comp/LA2A/0_0.65/LA2A0.0_65.0_tar.mp3" type="audio/mp3"> </audio></td>
+   </tr>
+  <tr> 
+            <th align="center" >LSTM</th> 
+            <th align="center" >ED</th> 
+</tr>
+  <tr>
+   <td> <audio controls unmuted><source src="static/Comp/LA2A/0_0.65/LA2ALSTM0.0_65.0_pred.mp3" type="audio/mp3"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Comp/LA2A/0_0.65/LA2ALSTM-ED0.0_65.0_pred.mp3" type="audio/mp3"> </audio></td>
+    </tr>
+      <tr> 
+            <th align="center" >LRU</th> 
+            <th align="center" >S4D</th> 
+</tr>
+  <tr>
+    <td> <audio controls unmuted><source src="static/Comp/LA2A/0_0.65/LA2ALRU0.0_65.0_pred.mp3" type="audio/wav"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Comp/LA2A/0_0.65/LA2AS4D0.0_65.0_pred.mp3" type="audio/wav"> </audio></td>
+    </tr>
+        </table>
+    </div>
+     </div>
+       </section>
+
+  <section class="hero teaser">
+  <div class="columns is-centered has-text-centered">
+    <div class="container">
+      <h2 class="title is-3"> - </h2>
+            <img src="static/Comp/LA2A/1.0_0.65/WavPlotLA2A1.0_65.0_Spectrogram.png" alt="STFT" style="width:50%" class="center">
+      </div>
+        </div>
+</section>
+    
+<!-- audio -->
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+  <table align="left" id="myTable">
+      <tr> 
+      <th align="center" >Input</th> 
+     <th align="center" >Target</th> 
+    </tr>
+<tr>
+    <td> <audio controls unmuted><source src="static/Comp/LA2A/LA2A_inp.mp3" type="audio/mp3"> </audio></td>
+      <td> <audio controls unmuted><source src="static/Comp/LA2A/1.0_0.65/LA2A1.0_65.0_tar.mp3" type="audio/mp3"> </audio></td>
+   </tr>
+  <tr> 
+            <th align="center" >LSTM</th> 
+            <th align="center" >ED</th> 
+</tr>
+  <tr>
+   <td> <audio controls unmuted><source src="static/Comp/LA2A/1.0_0.65/LA2ALSTM1.0_65.0_pred.mp3" type="audio/mp3"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Comp/LA2A/1.0_0.65/LA2ALSTM-ED1.0_65.0_pred.mp3" type="audio/mp3"> </audio></td>
+    </tr>
+      <tr> 
+            <th align="center" >LRU</th> 
+            <th align="center" >S4D</th> 
+</tr>
+  <tr>
+    <td> <audio controls unmuted><source src="static/Comp/LA2A/1.0_0.65/LA2ALRU1.0_65.0_pred.mp3" type="audio/wav"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Comp/LA2A/1.0_0.65/LA2AS4D1.0_65.0_pred.mp3" type="audio/wav"> </audio></td>
+    </tr>
+        </table>
+    </div>
+     </div>
+       </section>
+
+    <section class="hero teaser">
+  <div class="columns is-centered has-text-centered">
+    <div class="container">
+            <h2 class="title is-3"> - </h2>
+            <img src="static/Comp/LA2A/1.0_0.80/WavPlotLA2A1.0_80.0_Spectrogram.png" alt="STFT" style="width:50%" class="center">
+      </div>
+        </div>
+</section>
+
+  <!-- audio -->
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+  <table align="left" id="myTable">
+      <tr> 
+      <th align="center" >Input</th> 
+     <th align="center" >Target</th> 
+    </tr>
+<tr>
+    <td> <audio controls unmuted><source src="static/Comp/LA2A/LA2A_inp.mp3" type="audio/mp3"> </audio></td>
+      <td> <audio controls unmuted><source src="static/Comp/LA2A/1.0_0.80/LA2A1.0_80.0_tar.mp3" type="audio/mp3"> </audio></td>
+   </tr>
+  <tr> 
+            <th align="center" >LSTM</th> 
+            <th align="center" >ED</th> 
+</tr>
+  <tr>
+   <td> <audio controls unmuted><source src="static/Comp/LA2A/1.0_0.80/LA2ALSTM1.0_80.0_pred.mp3" type="audio/mp3"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Comp/LA2A/1.0_0.80/LA2ALSTM-ED1.0_80.0_pred.mp3" type="audio/mp3"> </audio></td>
+    </tr>
+      <tr> 
+            <th align="center" >LRU</th> 
+            <th align="center" >S4D</th> 
+</tr>
+  <tr>
+    <td> <audio controls unmuted><source src="static/Comp/LA2A/1.0_0.80/LA2ALRU1.0_80.0_pred.mp3" type="audio/wav"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Comp/LA2A/1.0_0.80/LA2AS4D1.0_80.0_pred.mp3" type="audio/wav"> </audio></td>
+    </tr>
+        </table>
+    </div>
+     </div>
+       </section>
+  
+
+    <section class="hero teaser">
+  <div class="columns is-centered has-text-centered">
+    <div class="container">
+      <h2 class="title is-3"> - </h2>
+  <h2 class="title is-3">TubeTech CL 1B Audio Examples</h2>
+      <p> The title of the waveform plot details the control parameters that range between 0 (min) and 1 (max).</p>
+            <img src="static/Comp/CL1B/0.25_0.0_0.75_1.0/CL1B0.25_0.0_0.75_1.0_Spectrogram.png" alt="STFT" style="width:50%" class="center">
+      </div>
+        </div>
+</section>
+    
+<!-- audio -->
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+  <table align="left" id="myTable">
+      <tr> 
+      <th align="center" >Input</th> 
+     <th align="center" >Target</th> 
+    </tr>
+<tr>
+    <td> <audio controls unmuted><source src="static/Comp/CL1B/CL1B_inp.mp3" type="audio/mp3"> </audio></td>
+      <td> <audio controls unmuted><source src="static/Comp/CL1B/0.25_0.0_0.75_1.0/CL1B0.25_0.0_0.75_1.0_tar.mp3" type="audio/mp3"> </audio></td>
+   </tr>
+  <tr> 
+            <th align="center" >LSTM</th> 
+            <th align="center" >ED</th> 
+</tr>
+  <tr>
+   <td> <audio controls unmuted><source src="static/Comp/CL1B/0.25_0.0_0.75_1.0/CL1BLSTM0.25_0.0_0.75_1.0_pred.mp3" type="audio/mp3"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Comp/CL1B/0.25_0.0_0.75_1.0/CL1BLSTM-ED0.25_0.0_0.75_1.0_pred.mp3" type="audio/mp3"> </audio></td>
+    </tr>
+      <tr> 
+            <th align="center" >LRU</th> 
+            <th align="center" >S4D</th> 
+</tr>
+  <tr>
+    <td> <audio controls unmuted><source src="static/Comp/CL1B/0.25_0.0_0.75_1.0/CL1BLRU0.25_0.0_0.75_1.0_pred.mp3" type="audio/wav"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Comp/CL1B/0.25_0.0_0.75_1.0/CL1BS4D0.25_0.0_0.75_1.0_pred.mp3" type="audio/wav"> </audio></td>
+    </tr>
+        </table>
+    </div>
+     </div>
+       </section>
+
+    <section class="hero teaser">
+  <div class="columns is-centered has-text-centered">
+    <div class="container">
+            <h2 class="title is-3"> - </h2>
+            <img src="static/Comp/CL1B/0.25_1.0_0.5_0.25/CL1B0.25_1.0_0.5_0.25_Spectrogram.png" alt="STFT" style="width:50%" class="center">
+      </div>
+        </div>
+</section>
+
+  <!-- audio -->
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+  <table align="left" id="myTable">
+      <tr> 
+      <th align="center" >Input</th> 
+     <th align="center" >Target</th> 
+    </tr>
+<tr>
+    <td> <audio controls unmuted><source src="static/Comp/CL1B/CL1B_inp.mp3" type="audio/mp3"> </audio></td>
+      <td> <audio controls unmuted><source src="static/Comp/CL1B/0.25_1.0_0.5_0.25/CL1B0.25_1.0_0.5_0.25_tar.mp3" type="audio/mp3"> </audio></td>
+   </tr>
+  <tr> 
+            <th align="center" >LSTM</th> 
+            <th align="center" >ED</th> 
+</tr>
+  <tr>
+   <td> <audio controls unmuted><source src="static/Comp/CL1B/0.25_1.0_0.5_0.25/CL1BLSTM0.25_1.0_0.5_0.25_pred.mp3" type="audio/mp3"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Comp/CL1B/0.25_1.0_0.5_0.25/CL1BLSTM-ED0.25_1.0_0.5_0.25_pred.mp3" type="audio/mp3"> </audio></td>
+    </tr>
+      <tr> 
+            <th align="center" >LRU</th> 
+            <th align="center" >S4D</th> 
+</tr>
+  <tr>
+    <td> <audio controls unmuted><source src="static/Comp/CL1B/0.25_1.0_0.5_0.25/CL1BLRU0.25_1.0_0.5_0.25_pred.mp3" type="audio/wav"> </audio></td>
+    <td> <audio controls unmuted><source src="static/FComp/CL1B/0.25_1.0_0.5_0.25/CL1BS4D0.25_1.0_0.5_0.25_pred.mp3" type="audio/wav"> </audio></td>
+    </tr>
+        </table>
+    </div>
+     </div>
+       </section>
+
+      <section class="hero teaser">
+  <div class="columns is-centered has-text-centered">
+    <div class="container">
+            <h2 class="title is-3"> - </h2>
+            <img src="static/Comp/CL1B/0.25_1.0_0.5_0.25/CL1B0.25_1.0_0.5_0.25_Spectrogram.png" alt="STFT" style="width:50%" class="center">
+      </div>
+        </div>
+</section>
+
+  <!-- audio -->
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+  <table align="left" id="myTable">
+      <tr> 
+      <th align="center" >Input</th> 
+     <th align="center" >Target</th> 
+    </tr>
+<tr>
+    <td> <audio controls unmuted><source src="static/Comp/CL1B/CL1B_inp.mp3" type="audio/mp3"> </audio></td>
+      <td> <audio controls unmuted><source src="static/Comp/CL1B/0.25_1.0_0.5_0.25/CL1B0.25_1.0_0.5_0.25_tar.mp3" type="audio/mp3"> </audio></td>
+   </tr>
+  <tr> 
+            <th align="center" >LSTM</th> 
+            <th align="center" >ED</th> 
+</tr>
+  <tr>
+   <td> <audio controls unmuted><source src="static/Comp/CL1B/0.25_1.0_0.5_0.25/CL1BLSTM0.25_1.0_0.5_0.25_pred.mp3" type="audio/mp3"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Comp/CL1B/0.25_1.0_0.5_0.25/CL1BLSTM-ED0.25_1.0_0.5_0.25_pred.mp3" type="audio/mp3"> </audio></td>
+    </tr>
+      <tr> 
+            <th align="center" >LRU</th> 
+            <th align="center" >S4D</th> 
+</tr>
+  <tr>
+    <td> <audio controls unmuted><source src="static/Comp/CL1B/0.25_1.0_0.5_0.25/CL1BLRU0.25_1.0_0.5_0.25_pred.mp3" type="audio/wav"> </audio></td>
+    <td> <audio controls unmuted><source src="static/FComp/CL1B/0.25_1.0_0.5_0.25/CL1BS4D0.25_1.0_0.5_0.25_pred.mp3" type="audio/wav"> </audio></td>
+    </tr>
+        </table>
+    </div>
+     </div>
+       </section>
+
+      <section class="hero teaser">
+  <div class="columns is-centered has-text-centered">
+    <div class="container">
+            <h2 class="title is-3"> - </h2>
+            <img src="static/Comp/CL1B/0.5_0.0_0.25_0.25/CL1B0.5_0.0_0.25_0.25_Spectrogram.png" alt="STFT" style="width:50%" class="center">
+      </div>
+        </div>
+</section>
+
+  <!-- audio -->
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+  <table align="left" id="myTable">
+      <tr> 
+      <th align="center" >Input</th> 
+     <th align="center" >Target</th> 
+    </tr>
+<tr>
+    <td> <audio controls unmuted><source src="static/Comp/CL1B/CL1B_inp.mp3" type="audio/mp3"> </audio></td>
+      <td> <audio controls unmuted><source src="static/Comp/CL1B/0.5_0.0_0.25_0.25/CL1B0.5_0.0_0.25_0.25_tar.mp3" type="audio/mp3"> </audio></td>
+   </tr>
+  <tr> 
+            <th align="center" >LSTM</th> 
+            <th align="center" >ED</th> 
+</tr>
+  <tr>
+   <td> <audio controls unmuted><source src="static/Comp/CL1B/0.5_0.0_0.25_0.25/CL1BLSTM0.5_0.0_0.25_0.25_pred.mp3" type="audio/mp3"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Comp/CL1B/0.5_0.0_0.25_0.25/CL1BLSTM-ED0.5_0.0_0.25_0.25_pred.mp3" type="audio/mp3"> </audio></td>
+    </tr>
+      <tr> 
+            <th align="center" >LRU</th> 
+            <th align="center" >S4D</th> 
+</tr>
+  <tr>
+    <td> <audio controls unmuted><source src="static/Comp/CL1B/0.5_0.0_0.25_0.25/CL1BLRU0.5_0.0_0.25_0.25_pred.mp3" type="audio/wav"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Comp/CL1B/0.5_0.0_0.25_0.25/CL1BS4D0.5_0.0_0.25_0.25_pred.mp3" type="audio/wav"> </audio></td>
+    </tr>
+        </table>
+    </div>
+     </div>
+       </section>
+
+  <section class="hero teaser">
+  <div class="columns is-centered has-text-centered">
+    <div class="container">
+            <h2 class="title is-3"> - </h2>
+            <img src="static/Comp/CL1B/1.0_1.0_1.0_0.25/CL1B1.0_1.0_1.0_0.25_Spectrogram.png" alt="STFT" style="width:50%" class="center">
+      </div>
+        </div>
+</section>
+
+  <!-- audio -->
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+  <table align="left" id="myTable">
+      <tr> 
+      <th align="center" >Input</th> 
+     <th align="center" >Target</th> 
+    </tr>
+<tr>
+    <td> <audio controls unmuted><source src="static/Comp/CL1B/CL1B_inp.mp3" type="audio/mp3"> </audio></td>
+      <td> <audio controls unmuted><source src="static/Comp/CL1B/1.0_1.0_1.0_0.25/CL1B1.0_1.0_1.0_0.25_tar.mp3" type="audio/mp3"> </audio></td>
+   </tr>
+  <tr> 
+            <th align="center" >LSTM</th> 
+            <th align="center" >ED</th> 
+</tr>
+  <tr>
+   <td> <audio controls unmuted><source src="static/Comp/CL1B/1.0_1.0_1.0_0.25/CL1BLSTM1.0_1.0_1.0_0.25_pred.mp3" type="audio/mp3"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Comp/CL1B/1.0_1.0_1.0_0.25/CL1BLSTM-ED1.0_1.0_1.0_0.25_pred.mp3" type="audio/mp3"> </audio></td>
+    </tr>
+      <tr> 
+            <th align="center" >LRU</th> 
+            <th align="center" >S4D</th> 
+</tr>
+  <tr>
+    <td> <audio controls unmuted><source src="static/Comp/CL1B/1.0_1.0_1.0_0.25/CL1BLRU1.0_1.0_1.0_0.25_pred.mp3" type="audio/wav"> </audio></td>
+    <td> <audio controls unmuted><source src="static/Comp/CL1B/1.0_1.0_1.0_0.25/CL1BS4D1.0_1.0_1.0_0.25_pred.mp3" type="audio/wav"> </audio></td>
+    </tr>
+        </table>
+    </div>
+     </div>
+       </section>
+
+  
+<!--BibTex citation -->
+  <section class="section" id="BibTeX">
+    <div class="container is-max-desktop content">
+      <h2 class="title">BibTeX</h2>
+      <pre><code> </code></pre>
+    </div>
+</section>
+<!--End BibTex citation -->
+
+
+  <footer class="footer">
+  <div class="container">
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="content">
+
+          <p>
+            This page was built using the <a href="https://github.com/eliahuhorwitz/Academic-project-page-template" target="_blank">Academic Project Page Template</a> which was adopted from the <a href="https://nerfies.github.io" target="_blank">Nerfies</a> project page.
+            You are free to borrow the of this website, we just ask that you link back to this page in the footer. <br> This website is licensed under a <a rel="license"  href="http://creativecommons.org/licenses/by-sa/4.0/" target="_blank">Creative
+            Commons Attribution-ShareAlike 4.0 International License</a>.
+          </p>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- Statcounter tracking code -->
+  
+<!-- You can add a tracker to track page visits by creating an account at statcounter.com -->
+
+    <!-- End of Statcounter Code -->
+
+  </body>
+  </html>
