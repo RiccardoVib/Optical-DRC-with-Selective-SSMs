@@ -7,7 +7,6 @@ from librosa import display
 from scipy.io import wavfile
 import librosa.display
 from scipy import fft
-from Utils import filterAudio
 
 
 class MyLRScheduler(tf.keras.optimizers.schedules.LearningRateSchedule):
@@ -83,7 +82,6 @@ def predictWaves(predictions, x_test, y_test, model_save_dir, save_folder, fs, f
     if not os.path.exists(os.path.dirname(pred_dir)):
         os.makedirs(os.path.dirname(pred_dir))
 
-    predictions = filterAudio(predictions.reshape(-1))
     predictions = (predictions.reshape(-1))
     x_test = x_test.reshape(-1)
     y_test = y_test.reshape(-1)
