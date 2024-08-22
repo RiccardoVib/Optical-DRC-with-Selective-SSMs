@@ -2,7 +2,6 @@ from Training import train
 
 
 data_dir = '../../Files/'
-#data_dir = 'C:/Users/riccarsi/OneDrive - Universitetet i Oslo/Datasets/Compressors/Pickles/'########
 epochs = [1, 200]
 units = 6
 batch_size = 600*4
