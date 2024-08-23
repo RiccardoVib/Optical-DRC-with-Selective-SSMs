@@ -1,8 +1,8 @@
 import os
 import tensorflow as tf
 from UtilsForTrainings import plotTraining, writeResults, checkpoints, predictWaves, MyLRScheduler
-from Models import create_model_S4D, create_model_LSTM, create_model_Mamba, create_model_ED_CNN
-from DatasetsClass import DataGeneratorPicklesCL1B, DataGeneratorPicklesLA2A
+from Models import create_model_ED_original, create_model_LSTM_baseline
+from DatasetsClass_baseline import DataGeneratorPicklesCL1B, DataGeneratorPicklesLA2A
 import numpy as np
 import random
 from Metrics import ESR, RMSE
@@ -15,7 +15,7 @@ def train(**kwargs):
     learning_rate = kwargs.get('learning_rate', 1e-1)
     units = kwargs.get('units', 16)
     model_save_dir = kwargs.get('model_save_dir', '../../TrainedModels')
-    save_folder = kwargs.get('save_folder', 'Testing')
+    save_folder = kwargs.get('save_folder', 'ED_Testing')
     inference = kwargs.get('inference', False)
     dataset = kwargs.get('dataset', None)
     comp = kwargs.get('comp', None)
@@ -24,10 +24,12 @@ def train(**kwargs):
     epochs = kwargs.get('epochs', 60)
 
 
+    start = time.time()
+
     #####seed
-    #np.random.seed(422)
-    #tf.random.set_seed(422)
-    #random.seed(422)
+    #np.random.seed(42)
+    #tf.random.set_seed(42)
+    #random.seed(42)
 
     if comp == 'CL1B':
         data_generator = DataGeneratorPicklesCL1B
@@ -44,7 +46,6 @@ def train(**kwargs):
     w = 64
     callbacks = []
     ckpt_callback, ckpt_callback_latest, ckpt_dir, ckpt_dir_latest = checkpoints(model_save_dir, save_folder, 0.)
-
     #
     dataset_test = dataset
     while has_numbers(dataset_test[8:]):
@@ -58,24 +59,21 @@ def train(**kwargs):
     opt = tf.keras.optimizers.Adam(learning_rate=MyLRScheduler(learning_rate, training_steps), clipnorm=1)
     
     # create the model
-    if model_name == 'Mamba':
-        model = create_model_Mamba(b_size=batch_size, input_dims=w, model_input_dims=units//2, model_states=units, comp=comp)
-    elif model_name == 'ED-CNN':
-        model = create_model_ED_CNN(input_dim=w, units=units, b_size=batch_size, comp=comp)
-    elif model_name == 'S4D':
-        model = create_model_S4D(input_dim=w, units=units, b_size=batch_size, comp=comp)
-    elif model_name == 'LSTM':
-        model = create_model_LSTM(input_dim=w, b_size=batch_size, comp=comp)
+    if model_name == 'LSTMbaseline':
+        model = create_model_LSTM_baseline(input_dim=w, b_size=batch_size, comp=comp)
+    elif model_name == 'EDbaseline':
+        model = create_model_ED_original(input_dim=w, units=units, b_size=batch_size, comp=comp)
+
 
     losses = 'mse'
     model.compile(loss=losses, optimizer=opt)
-    start = time.time()
+
     if not inference:
         callbacks += [ckpt_callback, ckpt_callback_latest]
-        last = tf.train.latest_checkpoint(ckpt_dir_latest)
-        if last is not None:
-            print("Restored weights from {}".format(ckpt_dir_latest))
-            model.load_weights(last)
+        best = tf.train.latest_checkpoint(ckpt_dir)
+        if best is not None:
+            print("Restored weights from {}".format(ckpt_dir))
+            model.load_weights(best)
             # start_epoch = int(latest.split('-')[-1].split('.')[0])
             # print('Starting from epoch: ', start_epoch + 1)
         else:
@@ -87,7 +85,7 @@ def train(**kwargs):
         best_loss = 1e9
         count = 0
         for i in range(epochs):
-            start = time.time()
+            
             print('epochs:', i)
             model.reset_states()
             print(model.optimizer.learning_rate)
@@ -95,14 +93,13 @@ def train(**kwargs):
             results = model.fit(train_gen, epochs=1, verbose=0, shuffle=False, validation_data=test_gen, callbacks=callbacks)
             loss_training[i] = results.history['loss'][-1]
             loss_val[i] = results.history['val_loss'][-1]
-            print(results.history['val_loss'][-1])
 
             if results.history['val_loss'][-1] < best_loss:
                 best_loss = results.history['val_loss'][-1]
                 count = 0
             else:
                 count = count + 1
-                if count == 50:
+                if count == 30:
                     break
             avg_time_epoch = (time.time() - start)
 
@@ -133,14 +130,13 @@ def train(**kwargs):
     # compute test loss
     model.reset_states()
     predictions = model.predict(test_gen, verbose=0)[:,-1]
-    w = w - 1
+    w = w-1
     predictWaves(predictions, test_gen.x[w:len(predictions)+w], test_gen.y[w:len(predictions)+w], model_save_dir, save_folder, fs, '0')
      
     mse = tf.keras.metrics.mean_squared_error(test_gen.y[w:len(predictions)+w], predictions)
     mae = tf.keras.metrics.mean_absolute_error(test_gen.y[w:len(predictions)+w], predictions)
     esr = ESR(test_gen.y[w:len(predictions)+w], predictions)
     rmse = RMSE(test_gen.y[w:len(predictions)+w], predictions)
-
     results_ = {'mse': mse, 'mae': mae, 'esr': esr, 'rmse': rmse}
 
     with open(os.path.normpath('/'.join([model_save_dir, save_folder, str(model_name) + 'results.txt'])), 'w') as f:

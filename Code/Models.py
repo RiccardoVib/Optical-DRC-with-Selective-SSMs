@@ -1,5 +1,6 @@
 import tensorflow as tf
-from Mamba import FiLM, TemporalFiLM, ResidualBlock, S6
+from Mamba import ResidualBlock
+from Layers import FiLM, TemporalFiLM
 from S4D import S4D
 import numpy as np
 import math
@@ -79,20 +80,19 @@ def create_model_LSTM_baseline(input_dim, b_size=600, comp=''):
         c = tf.concat([x, z], axis=-1)
         # attack and release
         z2 = tf.keras.layers.Input(batch_shape=(b_size, 2), name='params_inputs2')
-        x = tf.concat([z2, c], axis=-1)
+        x_ = tf.concat([z2, c], axis=-1)
     elif comp == 'LA2A':
         z = tf.keras.layers.Input(batch_shape=(b_size, 1), name='params_inputs')
         c = tf.concat([x, z], axis=-1)
         # attack and release
         z2 = tf.keras.layers.Input(batch_shape=(b_size, 1), name='params_inputs2')
-        x = tf.concat([z2, c], axis=-1)
+        x_ = tf.concat([z2, c], axis=-1)
 
-    x = tf.expand_dims(x, axis=1)
+    x = tf.expand_dims(x_, axis=1)
     x = tf.keras.layers.LSTM(14, return_sequences=False, return_state=False, stateful=True, name='LSTM')(x)
     x = tf.keras.layers.Dense(2)(x)
 
     x = tf.keras.layers.Dense(1, name='OutLayer')(x)
-    #x = tf.keras.layers.Multiply()([inp[:, -1], x])
 
     if comp == 'CL1B':
         model = tf.keras.models.Model(inputs=[z, z2, inp], outputs=x, name='LSTM-baseline')

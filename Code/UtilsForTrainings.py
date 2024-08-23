@@ -3,16 +3,13 @@ import os
 import tensorflow as tf
 import matplotlib.pyplot as plt
 import pickle
-from librosa import display
 from scipy.io import wavfile
-import librosa.display
-from scipy import fft
 
 
 class MyLRScheduler(tf.keras.optimizers.schedules.LearningRateSchedule):
-    def __init__(self, initial_learning_rate, training_steps, epochs):
+    def __init__(self, initial_learning_rate, training_steps):
         self.initial_learning_rate = initial_learning_rate
-        self.steps = training_steps * 30#epochs
+        self.steps = training_steps
 
     def __call__(self, step):
         lr = tf.cast(self.initial_learning_rate * (0.25 ** (tf.cast(step / self.steps, dtype=tf.float32))),

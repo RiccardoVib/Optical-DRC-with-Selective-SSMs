@@ -1,8 +1,7 @@
 import tensorflow as tf
-import math
 import numpy as np
 from einops import repeat
-from Mamba import GLU
+from Layers import GLU
 
 
 ### from https://github.com/state-spaces/s4/blob/main/models/s4/
@@ -111,7 +110,7 @@ class S4DKernel(tf.keras.layers.Layer):
         self.state = tf.Variable(tf.zeros((self.b_size, self.H, self.N), dtype=tf.complex64), name='state', trainable=False)
 
 class S4D(tf.keras.layers.Layer):
-    def __init__(self, d_state=64, d_model=1, transposed=True, hippo=False, **kernel_args):
+    def __init__(self, d_state=64, d_model=1, transposed=True, hippo=True, **kernel_args):
         super().__init__()
 
         self.h = d_model

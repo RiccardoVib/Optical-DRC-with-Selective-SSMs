@@ -2,15 +2,11 @@ import pickle
 import os
 import numpy as np
 from tensorflow.keras.utils import Sequence
-from Utils import filterAudio
 from scipy.signal.windows import tukey
-import scipy.fft
-import matplotlib.pyplot as plt
 
 class DataGeneratorPicklesCL1B(Sequence):
 
     def __init__(self, data_dir, filename, input_size, batch_size=10):
-
 
         self.data_dir = data_dir
         self.filename = filename
@@ -29,9 +25,9 @@ class DataGeneratorPicklesCL1B(Sequence):
         Z = pickle.load(file_data)
         x = np.array(Z['x'][:, :], dtype=np.float32)
         y = np.array(Z['y'][:, :], dtype=np.float32)
-
         if x.shape[0] == 1:
            x = np.repeat(x, y.shape[0], axis=0)
+
         x = x * np.array(tukey(x.shape[1], alpha=0.005), dtype=np.float32).reshape(1, -1)
         y = y * np.array(tukey(x.shape[1], alpha=0.005), dtype=np.float32).reshape(1, -1)
         z = np.array(Z['z'], dtype=np.float32)
@@ -70,6 +66,7 @@ class DataGeneratorPicklesCL1B(Sequence):
         X = np.empty((self.batch_size, self.window))
         Y = np.empty((self.batch_size, 1))
         Z = np.empty((self.batch_size, 4))
+        idx = idx - self.count*int((self.x.shape[0]) / self.batch_size)
 
         # get the indices of the requested batch
         indices = self.indices[idx*self.batch_size:(idx+1)*self.batch_size]
@@ -81,16 +78,20 @@ class DataGeneratorPicklesCL1B(Sequence):
             c = c + 1
 
         Z1 = Z[:, :2]
-        Z2 = Z[:, 2:]
+        Z2 = Z[:, 2:]#.reshape(self.batch_size, 1, 2)
 
-        Xf = np.abs(scipy.fft.rfft(X, n=(8*32)-1))
-
-        return [Z1, Z2, Xf, X], Y
+        return [Z1, Z2, X], Y
 
 
 class DataGeneratorPicklesLA2A(Sequence):
 
     def __init__(self, data_dir, filename, input_size, batch_size=10):
+        """
+        Initializes a data generator object
+          :param data_dir: the directory in which data are stored
+          :param output_size: output size
+          :param batch_size: The size of each batch returned by __getitem__
+        """
 
         self.data_dir = data_dir
         self.filename = filename
@@ -109,10 +110,8 @@ class DataGeneratorPicklesLA2A(Sequence):
         Z = pickle.load(file_data)
         x = np.array(Z['x'][:, :], dtype=np.float32)
         y = np.array(Z['y'][:, :], dtype=np.float32)
-
         if x.shape[0] == 1:
            x = np.repeat(x, y.shape[0], axis=0)
-     
         x = x * np.array(tukey(x.shape[1], alpha=0.005), dtype=np.float32).reshape(1, -1)
         y = y * np.array(tukey(x.shape[1], alpha=0.005), dtype=np.float32).reshape(1, -1)
         z = np.array(Z['z'], dtype=np.float32)
@@ -151,6 +150,7 @@ class DataGeneratorPicklesLA2A(Sequence):
         X = np.empty((self.batch_size, self.window))
         Y = np.empty((self.batch_size, 1))
         Z = np.empty((self.batch_size, 2))
+        idx = idx - self.count*int((self.x.shape[0]) / self.batch_size)
 
         # get the indices of the requested batch
         indices = self.indices[idx*self.batch_size:(idx+1)*self.batch_size]
@@ -160,11 +160,5 @@ class DataGeneratorPicklesLA2A(Sequence):
             Y[c, :] = np.array(self.y[t-1])
             Z[c, :] = np.array(self.z[t-1])
             c = c + 1
-
-        Z1 = Z[:, :1]
-        Z2 = Z[:, 1:]
-        
-        Xf = np.abs(scipy.fft.rfft(X, n=(8 * 32) - 1))
-
-        return [Z1, Z2, Xf, X], Y
+        return [Z, X], Y
 
