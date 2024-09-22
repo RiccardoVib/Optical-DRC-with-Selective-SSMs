@@ -78,9 +78,9 @@ def train(**kwargs):
     opt = tf.keras.optimizers.Adam(learning_rate=MyLRScheduler(learning_rate, training_steps), clipnorm=1)
     
     # create the model
-    if model_name == 'LSTMbaseline':
+    if model_name == 'LSTMb':
         model = create_model_LSTM_baseline(input_dim=w, b_size=batch_size, comp=comp)
-    elif model_name == 'EDbaseline':
+    elif model_name == 'EDb':
         model = create_model_ED_original(input_dim=w, units=units, b_size=batch_size, comp=comp)
 
     # compile the model with the optimizer and selected loss function
