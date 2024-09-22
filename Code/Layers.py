@@ -2,6 +2,12 @@ import tensorflow as tf
 
 class FiLM(tf.keras.layers.Layer):
     def __init__(self, in_size, bias=True, dim=-1, **kwargs):
+        """
+        Feature-wise Linear Modulation layer
+          :param in_size: input size
+          :param bias: if use bias 
+          :param dim: dimension for the split
+        """
         super(FiLM, self).__init__(**kwargs)
         self.bias = bias
         self.dim = dim
@@ -19,6 +25,12 @@ class FiLM(tf.keras.layers.Layer):
 
 class TemporalFiLM(tf.keras.layers.Layer):
     def __init__(self, in_size, bias=True, dim=-1, **kwargs):
+        """
+        Temporal Feature-wise Linear Modulation layer
+          :param in_size: input size
+          :param bias: if use bias 
+          :param dim: dimension for the split
+        """
         super(TemporalFiLM, self).__init__(**kwargs)
         self.bias = bias
         self.dim = dim
@@ -35,6 +47,12 @@ class TemporalFiLM(tf.keras.layers.Layer):
         return x
 
 class GLU(tf.keras.layers.Layer):
+    """
+    Gated Linear Unit
+        :param in_size: input size
+        :param bias: if use bias 
+        :param dim: dimension for the split
+    """
     def __init__(self, in_size, bias=True, dim=-1, **kwargs):
         super(GLU, self).__init__(**kwargs)
         self.bias = bias
