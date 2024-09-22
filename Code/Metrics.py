@@ -6,13 +6,16 @@ from keras import backend as K
 import librosa
 
 def RMSE(y_true, y_pred):
+    """ root-mean-squared error """
     return K.mean(K.abs(K.sqrt(K.square(K.abs(y_pred))) - K.sqrt(K.square(K.abs(y_true)))))
 
-def ESR(y_true, y_pred):#auraloss
+def ESR(y_true, y_pred):
+    """ error to signal ratio """
     return tf.divide(K.mean(K.square(y_pred - y_true)), K.mean(K.square(y_true) + 0.00001))
 
 
 def MFCC(y_true, y_pred, sr):
+    """ Mel-frequency cepstrum coefficients error """
     y_true_ = tf.reshape(y_true, [-1])
     y_pred_ = tf.reshape(y_pred, [-1])
     m = [1024]
@@ -61,8 +64,8 @@ def MFCC(y_true, y_pred, sr):
     return loss
 
 def flux(y_true, y_pred, sr):
+    """ spectral flux error """
 
-    #N = y_true.shape[0]
     y_t = []
     y_p = []
     w = 480000
@@ -74,9 +77,10 @@ def flux(y_true, y_pred, sr):
     #y_true = y_t/y_t.max()
     #y_pred = y_p/y_p.max()
 
-    return K.mean(tf.abs(y_t - y_p))# / N
+    return K.mean(tf.abs(y_t - y_p))
 
-def STFT_t(y_true, y_pred):#auraloss multi-STFT
+def STFT_t(y_true, y_pred):
+    """ multi-STFT error """
     m = [32, 64, 128]
     y_true_ = tf.reshape(y_true, [-1])
     y_pred_ = tf.reshape(y_pred, [-1])
@@ -97,32 +101,5 @@ def STFT_t(y_true, y_pred):#auraloss multi-STFT
         Y_pred = tf.pow(K.abs(Y_pred), 2)
 
         loss += tf.norm((Y_true - Y_pred), ord=1) / (tf.norm(Y_true, ord=1) + 0.00001)
-        loss = loss #/ 600
-
-    return (loss + log_loss) / len(m)
-
-def STFT_f(y_true, y_pred):#auraloss multi-STFT
-    m = [256, 512, 1024]
-    y_true_ = tf.reshape(y_true, [-1])
-    y_pred_ = tf.reshape(y_pred, [-1])
-
-    loss = 0
-    log_loss = 0
-    for i in range(len(m)):
-
-        pad_amount = int(m[i] // 2)  # Symmetric even padding like librosa.
-        #pads = [0 for _ in range(len(y_true.shape))]
-        pads = [[pad_amount, pad_amount]]
-        y_true = tf.pad(y_true_, pads, mode='CONSTANT', constant_values=0)
-        y_pred = tf.pad(y_pred_, pads, mode='CONSTANT', constant_values=0)
-
-        Y_true = K.abs(tf.signal.stft(y_true, fft_length=m[i], frame_length=m[i], frame_step=m[i] // 4, pad_end=False))
-        Y_pred = K.abs(tf.signal.stft(y_pred, fft_length=m[i], frame_length=m[i], frame_step=m[i] // 4, pad_end=False))
-
-        Y_true = tf.pow(K.abs(Y_true), 2)
-        Y_pred = tf.pow(K.abs(Y_pred), 2)
-
-        loss += tf.norm((Y_true - Y_pred), ord=1) / (tf.norm(Y_true, ord=1) + 0.00001)
-        loss = loss #/ 600
 
     return (loss + log_loss) / len(m)
