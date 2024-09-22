@@ -7,7 +7,13 @@ from scipy.signal.windows import tukey
 class DataGeneratorPicklesCL1B(Sequence):
 
     def __init__(self, data_dir, filename, input_size, batch_size=10):
-
+        """
+        Initializes a data generator object for the CL1B dataset
+          :param filename: the name of the dataset
+          :param data_dir: the directory in which data are stored
+          :param input_size: the input size
+          :param batch_size: The size of each batch returned by __getitem__
+        """
         self.data_dir = data_dir
         self.filename = filename
         self.count = 0
@@ -87,9 +93,10 @@ class DataGeneratorPicklesLA2A(Sequence):
 
     def __init__(self, data_dir, filename, input_size, batch_size=10):
         """
-        Initializes a data generator object
+        Initializes a data generator object for the LA2A dataset
+          :param filename: the name of the dataset
           :param data_dir: the directory in which data are stored
-          :param output_size: output size
+          :param input_size: the input size
           :param batch_size: The size of each batch returned by __getitem__
         """
 
