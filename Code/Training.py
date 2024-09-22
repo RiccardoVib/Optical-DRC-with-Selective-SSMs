@@ -78,9 +78,9 @@ def train(**kwargs):
     opt = tf.keras.optimizers.Adam(learning_rate=MyLRScheduler(learning_rate, training_steps), clipnorm=1)
     
     # create the model
-    if model_name == 'Mamba':
+    if model_name == 'S6':
         model = create_model_Mamba(b_size=batch_size, input_dims=w, model_input_dims=units//2, model_states=units, comp=comp)
-    elif model_name == 'ED-CNN':
+    elif model_name == 'ED':
         model = create_model_ED_CNN(input_dim=w, units=units, b_size=batch_size, comp=comp)
     elif model_name == 'S4D':
         model = create_model_S4D(input_dim=w, units=units, b_size=batch_size, comp=comp)
