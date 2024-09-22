@@ -10,39 +10,51 @@ import matplotlib.pyplot as plt
 class DataGeneratorPicklesCL1B(Sequence):
 
     def __init__(self, data_dir, filename, input_size, batch_size=10):
-
+        """
+        Initializes a data generator object for the CL1B dataset
+          :param filename: the name of the dataset
+          :param data_dir: the directory in which data are stored
+          :param input_size: the input size
+          :param batch_size: The size of each batch returned by __getitem__
+        """
 
         self.data_dir = data_dir
         self.filename = filename
         self.count = 0
         self.batch_size = batch_size
         self.window = input_size
-
+        
+        # prepare the input, target and conditioning matrix
         self.x, self.y, self.z, rep, lim = self.prepareXYZ(data_dir, filename)
-
 
         self.training_steps = (lim // self.batch_size)
         self.on_epoch_end()
 
     def prepareXYZ(self, data_dir, filename):
+        # load all the audio files
         file_data = open(os.path.normpath('/'.join([data_dir, filename])), 'rb')
         Z = pickle.load(file_data)
         x = np.array(Z['x'][:, :], dtype=np.float32)
         y = np.array(Z['y'][:, :], dtype=np.float32)
-
+        
+        # if input is shared to all the targets, it is repeat accordingly to the number of target audio files
         if x.shape[0] == 1:
            x = np.repeat(x, y.shape[0], axis=0)
         x = x * np.array(tukey(x.shape[1], alpha=0.005), dtype=np.float32).reshape(1, -1)
         y = y * np.array(tukey(x.shape[1], alpha=0.005), dtype=np.float32).reshape(1, -1)
         z = np.array(Z['z'], dtype=np.float32)
         del Z
-
+        
+        # reshape to one dimension
         rep = x.shape[1]
         x = x.reshape(-1)
         y = y.reshape(-1)
-
-        N = int((x.shape[0] - self.window) / self.batch_size)-1 #how many iteration
-        lim = int(N * self.batch_size) + self.window #how many samples
+        
+        # how many iterations are needed
+        N = int((x.shape[0] - self.window) / self.batch_size)-1
+        
+        # how many total samples is the audio
+        lim = int(N * self.batch_size) + self.window
         x = x[:lim]
         y = y[:lim]
         z = np.repeat(z, rep, axis=0)
@@ -50,6 +62,7 @@ class DataGeneratorPicklesCL1B(Sequence):
         return x, y, z, rep, lim
 
     def on_epoch_end(self):
+        # create/reset the vector containing the indices of the batches
         self.indices = np.arange(self.window, self.x.shape[0]+1)
         self.count = 0
 
@@ -57,6 +70,7 @@ class DataGeneratorPicklesCL1B(Sequence):
         self.indices = np.arange(self.window, self.x.shape[0]+1)
 
     def __len__(self):
+        # compute the needed number of iteration before conclude one epoch
         return int((self.x.shape[0]) / self.batch_size)
 
     def __call__(self):
@@ -66,7 +80,7 @@ class DataGeneratorPicklesCL1B(Sequence):
                 self.on_epoch_end()
 
     def __getitem__(self, idx):
-        ## Initializing Batch
+        # Initializing input, target, and conditioning batches
         X = np.empty((self.batch_size, self.window))
         Y = np.empty((self.batch_size, 1))
         Z = np.empty((self.batch_size, 4))
@@ -74,6 +88,7 @@ class DataGeneratorPicklesCL1B(Sequence):
         # get the indices of the requested batch
         indices = self.indices[idx*self.batch_size:(idx+1)*self.batch_size]
         c = 0
+        # fill the batches
         for t in range(indices[0], indices[-1]+1, 1):
             X[c, :] = np.array(self.x[t - self.window: t])
             Y[c, :] = np.array(self.y[t-1])
@@ -91,25 +106,33 @@ class DataGeneratorPicklesCL1B(Sequence):
 class DataGeneratorPicklesLA2A(Sequence):
 
     def __init__(self, data_dir, filename, input_size, batch_size=10):
-
+        """
+        Initializes a data generator object for the LA2A dataset
+          :param filename: the name of the dataset
+          :param data_dir: the directory in which data are stored
+          :param input_size: the input size
+          :param batch_size: The size of each batch returned by __getitem__
+        """
         self.data_dir = data_dir
         self.filename = filename
         self.count = 0
         self.batch_size = batch_size
         self.window = input_size
 
+        # prepare the input, target and conditioning matrix
         self.x, self.y, self.z, rep, lim = self.prepareXYZ(data_dir, filename)
-
 
         self.training_steps = (lim // self.batch_size)
         self.on_epoch_end()
 
     def prepareXYZ(self, data_dir, filename):
+        # load all the audio files
         file_data = open(os.path.normpath('/'.join([data_dir, filename])), 'rb')
         Z = pickle.load(file_data)
         x = np.array(Z['x'][:, :], dtype=np.float32)
         y = np.array(Z['y'][:, :], dtype=np.float32)
 
+        # if input is shared to all the targets, it is repeat accordingly to the number of target audio files
         if x.shape[0] == 1:
            x = np.repeat(x, y.shape[0], axis=0)
      
@@ -118,12 +141,16 @@ class DataGeneratorPicklesLA2A(Sequence):
         z = np.array(Z['z'], dtype=np.float32)
         del Z
 
+        # reshape to one dimension
         rep = x.shape[1]
         x = x.reshape(-1)
         y = y.reshape(-1)
-
-        N = int((x.shape[0] - self.window) / self.batch_size)-1 #how many iteration
-        lim = int(N * self.batch_size) + self.window #how many samples
+        
+        # how many iterations are needed
+        N = int((x.shape[0] - self.window) / self.batch_size)-1
+        
+        # how many total samples is the audio
+        lim = int(N * self.batch_size) + self.window
         x = x[:lim]
         y = y[:lim]
         z = np.repeat(z, rep, axis=0)
@@ -131,6 +158,7 @@ class DataGeneratorPicklesLA2A(Sequence):
         return x, y, z, rep, lim
 
     def on_epoch_end(self):
+        # create/reset the vector containing the indices of the batches
         self.indices = np.arange(self.window, self.x.shape[0]+1)
         self.count = 0
 
@@ -138,6 +166,7 @@ class DataGeneratorPicklesLA2A(Sequence):
         self.indices = np.arange(self.window, self.x.shape[0]+1)
 
     def __len__(self):
+        # compute the needed number of iteration before conclude one epoch
         return int((self.x.shape[0]) / self.batch_size)
 
     def __call__(self):
@@ -147,7 +176,7 @@ class DataGeneratorPicklesLA2A(Sequence):
                 self.on_epoch_end()
 
     def __getitem__(self, idx):
-        ## Initializing Batch
+        # Initializing input, target, and conditioning batches
         X = np.empty((self.batch_size, self.window))
         Y = np.empty((self.batch_size, 1))
         Z = np.empty((self.batch_size, 2))
