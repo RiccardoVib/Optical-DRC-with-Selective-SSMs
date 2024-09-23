@@ -40,6 +40,8 @@ class DataGeneratorPicklesCL1B(Sequence):
         # if input is shared to all the targets, it is repeat accordingly to the number of target audio files
         if x.shape[0] == 1:
            x = np.repeat(x, y.shape[0], axis=0)
+
+        # windowing the signal to avoid misalignments
         x = x * np.array(tukey(x.shape[1], alpha=0.005), dtype=np.float32).reshape(1, -1)
         y = y * np.array(tukey(x.shape[1], alpha=0.005), dtype=np.float32).reshape(1, -1)
         z = np.array(Z['z'], dtype=np.float32)
