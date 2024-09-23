@@ -329,7 +329,7 @@ def create_model_Mamba(b_size, input_dims=64, model_input_dims=4, conv_use_bias=
 
     x = tf.keras.layers.Dense(1)(x)
 
-    # multipy the predicted coefficient with the input sample at the current timestep
+    # multiply the predicted coefficient with the input sample at the current timestep
     x = tf.keras.layers.Multiply()([inp[:, -1], x])
                    
     model = tf.keras.models.Model(inputs=[z, z2, f, inp], outputs=x, name='S6')

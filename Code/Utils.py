@@ -3,7 +3,6 @@ import os
 import matplotlib.pyplot as plt
 import pickle
 from librosa import display
-from scipy.io import wavfile
 import librosa.display
 from scipy import fft
 from scipy.signal import butter, lfilter
