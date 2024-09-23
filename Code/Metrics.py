@@ -59,7 +59,6 @@ def MFCC(y_true, y_pred, sr):
         mfccs_tar = tf.signal.mfccs_from_log_mel_spectrograms(log_mel_spectrograms_tar)
 
         loss += tf.norm((mfccs_tar - mfccs_pred), ord=1) / (tf.norm(mfccs_tar, ord=1))
-        loss = loss #/ y_true.shape[0]
 
     return loss
 
