@@ -53,7 +53,7 @@ class DataGeneratorPicklesCL1B(Sequence):
         # how many iterations are needed
         N = int((x.shape[0] - self.window) / self.batch_size)-1
         
-        # how many total samples is the audio
+        # remove the last samples if not enough for a batch
         lim = int(N * self.batch_size) + self.window
         x = x[:lim]
         y = y[:lim]
