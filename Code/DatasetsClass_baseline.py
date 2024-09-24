@@ -34,8 +34,8 @@ class DataGeneratorPicklesCL1B(Sequence):
         if x.shape[0] == 1:
            x = np.repeat(x, y.shape[0], axis=0)
 
-        x = x * np.array(tukey(x.shape[1], alpha=0.005), dtype=np.float32).reshape(1, -1)
-        y = y * np.array(tukey(x.shape[1], alpha=0.005), dtype=np.float32).reshape(1, -1)
+        x = x * np.array(tukey(x.shape[1], alpha=0.000005), dtype=np.float32).reshape(1, -1)
+        y = y * np.array(tukey(x.shape[1], alpha=0.000005), dtype=np.float32).reshape(1, -1)
         z = np.array(Z['z'], dtype=np.float32)
         del Z
 
@@ -119,8 +119,8 @@ class DataGeneratorPicklesLA2A(Sequence):
         y = np.array(Z['y'][:, :], dtype=np.float32)
         if x.shape[0] == 1:
            x = np.repeat(x, y.shape[0], axis=0)
-        x = x * np.array(tukey(x.shape[1], alpha=0.005), dtype=np.float32).reshape(1, -1)
-        y = y * np.array(tukey(x.shape[1], alpha=0.005), dtype=np.float32).reshape(1, -1)
+        x = x * np.array(tukey(x.shape[1], alpha=0.000005), dtype=np.float32).reshape(1, -1)
+        y = y * np.array(tukey(x.shape[1], alpha=0.000005), dtype=np.float32).reshape(1, -1)
         z = np.array(Z['z'], dtype=np.float32)
         del Z
 
