@@ -1,14 +1,15 @@
 import os
 import tensorflow as tf
 from UtilsForTrainings import plotTraining, writeResults, checkpoints, predictWaves, MyLRScheduler
-from Models import create_model_S4D, create_model_LSTM, create_model_Mamba, create_model_ED_CNN
-from DatasetsClass import DataGeneratorPicklesCL1B, DataGeneratorPicklesLA2A
+from TCN import create_tcn, create_tcn_nocond
+from DatasetsClass_TCN import DataGeneratorPicklesCL1B, DataGeneratorPicklesLA2A
 import numpy as np
 import random
 from Metrics import ESR, RMSE
 import sys
 import time
 from Utils import has_numbers
+
 
 def train(**kwargs):
     """
@@ -25,18 +26,22 @@ def train(**kwargs):
       :param dataset: name of the datset to use [string]
       :param epochs: the number of epochs [int]
     """
+
     data_dir = kwargs.get('data_dir', '../../../Files/')
-    save_folder = kwargs.get('save_folder', 'Testing')
     batch_size = kwargs.get('batch_size', 1)
     learning_rate = kwargs.get('learning_rate', 1e-1)
     units = kwargs.get('units', 16)
     model_save_dir = kwargs.get('model_save_dir', '../../TrainedModels')
+    save_folder = kwargs.get('save_folder', 'ED_Testing')
     inference = kwargs.get('inference', False)
     dataset = kwargs.get('dataset', None)
     comp = kwargs.get('comp', None)
     model_name = kwargs.get('model', None)
-    epochs = kwargs.get('epochs', 60)
+    epochs = kwargs.get('epochs', [1, 60])
 
+    cond = True
+
+    start = time.time()
 
     # set all the seed in case reproducibility is desired
     #np.random.seed(422)
@@ -46,8 +51,10 @@ def train(**kwargs):
     # load the data generator according to the type of dataset
     if comp == 'CL1B':
         data_generator = DataGeneratorPicklesCL1B
+        nparams = 4
     elif comp == 'LA2A':
         data_generator = DataGeneratorPicklesLA2A
+        nparams = 2
 
     # check if GPUs are available and set the memory growing
     print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
@@ -56,42 +63,42 @@ def train(**kwargs):
         tf.config.experimental.set_memory_growth(gpu[0], True)
 
     fs = 48000
-    w = 64
-    
+    inp_seg = int(fs*1.5)#300ms
+    out_seg = inp_seg-11999-11-119-1199-4
+    w = inp_seg - out_seg
+
     # define callbacks: where to store the weights
     callbacks = []
-    ckpt_callback, ckpt_callback_latest, ckpt_dir, ckpt_dir_latest = checkpoints(model_save_dir, save_folder, 0.)
+    ckpt_callback, ckpt_callback_latest, ckpt_dir, ckpt_dir_latest = checkpoints(model_save_dir, save_folder, 0.0)
 
     # to load the right test set
     dataset_test = dataset
     while has_numbers(dataset_test[8:]):
         dataset_test = dataset_test[:-1]
 
+    # load the datasets
+
     # create the DataGenerator object to retrieve the data
-    train_gen = data_generator(data_dir, dataset + '_train.pickle', input_size=w, batch_size=batch_size)
-    test_gen = data_generator(data_dir, dataset_test + '_test.pickle', input_size=w, batch_size=batch_size)
+    test_gen = data_generator(data_dir, dataset_test + '_train.pickle', input_size=inp_seg, o=out_seg, w=w, cond=cond, batch_size=batch_size)
+    train_gen = data_generator(data_dir, dataset + '_train.pickle', input_size=inp_seg, o=out_seg, w=w, cond=cond, batch_size=batch_size)
 
     # the number of total training steps
     training_steps = train_gen.training_steps*epochs
     # define the Adam optimizer with the initial learning rate, training steps
     opt = tf.keras.optimizers.Adam(learning_rate=MyLRScheduler(learning_rate, training_steps), clipnorm=1)
-    
-    # create the model
-    if model_name == 'S6':
-        model = create_model_Mamba(b_size=batch_size, input_dims=w, model_input_dims=units//2, model_states=units, comp=comp)
-    elif model_name == 'ED':
-        model = create_model_ED_CNN(input_dim=w, units=units, b_size=batch_size, comp=comp)
-    elif model_name == 'S4D':
-        model = create_model_S4D(input_dim=w, units=units, b_size=batch_size, comp=comp)
-    elif model_name == 'LSTM':
-        model = create_model_LSTM(input_dim=w, b_size=batch_size, comp=comp)
 
+    # create the model
+    if cond:
+        model = create_tcn(nparams=nparams, n_inps=inp_seg, nblocks=4, kernel_size=13,
+               dilation_growth=10, channel_growth=1, channel_width=32,
+               conditional=cond)
+    else:
+        model = create_tcn_nocond(n_inps=inp_seg, nblocks=4, kernel_size=13,
+               dilation_growth=10, channel_growth=1, channel_width=32,
+               conditional=cond)
     # compile the model with the optimizer and selected loss function
     losses = 'mse'
     model.compile(loss=losses, optimizer=opt)
-
-    # start the timer for all the training process
-    start = time.time()
     # if inference is True, it jump directly to the inference section without train the model
     if not inference:
         callbacks += [ckpt_callback, ckpt_callback_latest]
@@ -104,23 +111,22 @@ def train(**kwargs):
             # if no weights are found,the weights are random generated
             print("Initializing random weights.")
 
-
         # defining the array taking the training and validation losses
         loss_training = np.empty(epochs)
         loss_val = np.empty(epochs)
         best_loss = 1e9
         # counting for early stopping
         count = 0
+
         for i in range(epochs):
             # start the timer for each epoch
             start = time.time()
             print('epochs:', i)
-            # reset the model's states
-            model.reset_states()
             print(model.optimizer.learning_rate)
 
-            results = model.fit(train_gen, epochs=1, verbose=0, shuffle=False, validation_data=test_gen, callbacks=callbacks)
-            
+            results = model.fit(train_gen, epochs=1, verbose=0, shuffle=False, validation_data=test_gen,
+                                callbacks=callbacks)
+
             # store the training and validation loss
             loss_training[i] = results.history['loss'][-1]
             loss_val[i] = results.history['val_loss'][-1]
@@ -135,10 +141,9 @@ def train(**kwargs):
                 count = count + 1
                 if count == 50:
                     break
-                    
             avg_time_epoch = (time.time() - start)
 
-            sys.stdout.write(f" Average time/epoch {'{:.3f}'.format(avg_time_epoch/60)} min")
+            sys.stdout.write(f" Average time/epoch {'{:.3f}'.format(avg_time_epoch / 60)} min")
             sys.stdout.write("\n")
 
 
@@ -152,13 +157,12 @@ def train(**kwargs):
         plotTraining(loss_training, loss_val, model_save_dir, save_folder, str(epochs))
 
         print("Training done")
-        
-        
+
     avg_time_epoch = (time.time() - start)
-    sys.stdout.write(f" Average time training{'{:.3f}'.format(avg_time_epoch/60)} min")
+    sys.stdout.write(f" Average time training{'{:.3f}'.format(avg_time_epoch / 60)} min")
     sys.stdout.write("\n")
     sys.stdout.flush()
-    
+
     # load the best weights of the model
     best = tf.train.latest_checkpoint(ckpt_dir)
     if best is not None:
@@ -168,18 +172,18 @@ def train(**kwargs):
         # if no weights are found,there is something wrong
         print("Something is wrong.")
 
-    # reset the states before predicting
-    model.reset_states()
-    predictions = model.predict(test_gen, verbose=0)[:,-1]
-    w = w - 1
+    # compute test loss
+    predictions = model.predict(test_gen, verbose=0).reshape(-1)#[:, -1]
     # plot and render the output audio file, together with the input and target
-    predictWaves(predictions, test_gen.x[w:len(predictions)+w], test_gen.y[w:len(predictions)+w], model_save_dir, save_folder, fs, '0')
+
+    predictWaves(predictions, test_gen.x[w:len(predictions) + w], test_gen.y[w:len(predictions) + w], model_save_dir,
+                 save_folder, fs, '0')
 
     # compute test loss
-    mse = tf.keras.metrics.mean_squared_error(test_gen.y[w:len(predictions)+w], predictions)
-    mae = tf.keras.metrics.mean_absolute_error(test_gen.y[w:len(predictions)+w], predictions)
-    esr = ESR(test_gen.y[w:len(predictions)+w], predictions)
-    rmse = RMSE(test_gen.y[w:len(predictions)+w], predictions)
+    mse = tf.keras.metrics.mean_squared_error(test_gen.y[w:len(predictions) + w], predictions)
+    mae = tf.keras.metrics.mean_absolute_error(test_gen.y[w:len(predictions) + w], predictions)
+    esr = ESR(test_gen.y[w:len(predictions) + w], predictions)
+    rmse = RMSE(test_gen.y[w:len(predictions) + w], predictions)
 
     results_ = {'mse': mse, 'mae': mae, 'esr': esr, 'rmse': rmse}
 
@@ -187,5 +191,5 @@ def train(**kwargs):
     with open(os.path.normpath('/'.join([model_save_dir, save_folder, str(model_name) + 'results.txt'])), 'w') as f:
         for key, value in results_.items():
             print('\n', key, '  : ', value, file=f)
-            
+
     return 42
