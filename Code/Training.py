@@ -13,7 +13,6 @@ from Utils import has_numbers
 def train(**kwargs):
     """
       :param data_dir: the directory in which dataset are stored [string]
-      :param save_folder: the directory in which the models are saved [string]
       :param batch_size: the size of each batch [int]
       :param learning_rate: the initial leanring rate [float]
       :param units: the number of model's units [int]
@@ -183,7 +182,7 @@ def train(**kwargs):
 
     results_ = {'mse': mse, 'mae': mae, 'esr': esr, 'rmse': rmse}
 
-    # writhe and store the metrics values
+    # write and store the metrics values
     with open(os.path.normpath('/'.join([model_save_dir, save_folder, str(model_name) + 'results.txt'])), 'w') as f:
         for key, value in results_.items():
             print('\n', key, '  : ', value, file=f)
