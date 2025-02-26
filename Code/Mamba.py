@@ -3,7 +3,7 @@ from einops import rearrange, repeat
 import numpy as np
 import math
 
-#### from https://github.com/state-spaces/mamba & https://towardsdatascience.com/mamba-ssm-theory-and-implementation-in-keras-and-tensorflow-32d6d4b32546
+#### from https://github.com/state-spaces/mamba & https://github.com/PeaBrane/mamba-tiny
 
 def selective_scan(u, delta, A, B, C, D):
     # first step of A_bar = exp(ΔA), i.e., ΔA
