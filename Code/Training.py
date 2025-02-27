@@ -35,6 +35,7 @@ def train(**kwargs):
     comp = kwargs.get('comp', None)
     model_name = kwargs.get('model', None)
     epochs = kwargs.get('epochs', 60)
+    mini_batch_size = kwargs.get('mini_batch_size', 1)
 
 
     # set all the seed in case reproducibility is desired
@@ -66,24 +67,28 @@ def train(**kwargs):
     while has_numbers(dataset_test[8:]):
         dataset_test = dataset_test[:-1]
 
+        if model_name == 'Mamba':
+            model = create_model_Mamba(mini_batch_size=mini_batch_size, b_size=batch_size, input_dims=w,
+                                       model_input_dims=1, model_states=units, comp=comp)
+        elif model_name == 'ED':
+            model = create_model_ED_CNN(mini_batch_size=1, input_dim=w, units=units, b_size=batch_size,
+                                        comp=comp)
+        elif model_name == 'S4D':
+            model = create_model_S4D(mini_batch_size=mini_batch_size, input_dim=w, units=units, b_size=batch_size,
+                                     comp=comp)
+        elif model_name == 'LSTM':
+            model = create_model_LSTM(mini_batch_size=mini_batch_size, input_dim=w, b_size=batch_size, comp=comp)
+
     # create the DataGenerator object to retrieve the data
-    train_gen = data_generator(data_dir, dataset + '_train.pickle', input_size=w, batch_size=batch_size)
-    test_gen = data_generator(data_dir, dataset_test + '_test.pickle', input_size=w, batch_size=batch_size)
+    train_gen = data_generator(data_dir, dataset + '_train.pickle', input_size=w, mini_batch_size=mini_batch_size,
+                               batch_size=batch_size, model=model)
+    test_gen = data_generator(data_dir, dataset_test + '_test.pickle', input_size=w, mini_batch_size=mini_batch_size,
+                              batch_size=batch_size, model=model)
 
     # the number of total training steps
     training_steps = train_gen.training_steps*epochs
     # define the Adam optimizer with the initial learning rate, training steps
     opt = tf.keras.optimizers.Adam(learning_rate=MyLRScheduler(learning_rate, training_steps), clipnorm=1)
-    
-    # create the model
-    if model_name == 'S6':
-        model = create_model_Mamba(b_size=batch_size, input_dims=w, model_input_dims=units//2, model_states=units, comp=comp)
-    elif model_name == 'ED':
-        model = create_model_ED_CNN(input_dim=w, units=units, b_size=batch_size, comp=comp)
-    elif model_name == 'S4D':
-        model = create_model_S4D(input_dim=w, units=units, b_size=batch_size, comp=comp)
-    elif model_name == 'LSTM':
-        model = create_model_LSTM(input_dim=w, b_size=batch_size, comp=comp)
 
     # compile the model with the optimizer and selected loss function
     losses = 'mse'
@@ -170,15 +175,24 @@ def train(**kwargs):
     # reset the states before predicting
     model.reset_states()
     predictions = model.predict(test_gen, verbose=0)[:,-1]
-    w = w - 1
+
+    predictions = predictions.reshape(test_gen.y.shape[0], -1)
+    predictions = predictions[:, mini_batch_size - w:]
+    y = test_gen.y[:, :len(predictions[0])]
+    x = test_gen.x[:, :len(predictions[0])]
+
+    predictions = predictions.reshape(-1)
+    y = y.reshape(-1)
+    x = x.reshape(-1)
+
     # plot and render the output audio file, together with the input and target
-    predictWaves(predictions, test_gen.x[w:len(predictions)+w], test_gen.y[w:len(predictions)+w], model_save_dir, save_folder, fs, '0')
+    predictWaves(predictions, x, y, model_save_dir, save_folder, fs, '0')
 
     # compute test loss
-    mse = tf.keras.metrics.mean_squared_error(test_gen.y[w:len(predictions)+w], predictions)
-    mae = tf.keras.metrics.mean_absolute_error(test_gen.y[w:len(predictions)+w], predictions)
-    esr = ESR(test_gen.y[w:len(predictions)+w], predictions)
-    rmse = RMSE(test_gen.y[w:len(predictions)+w], predictions)
+    mse = tf.keras.metrics.mean_squared_error(y, predictions)
+    mae = tf.keras.metrics.mean_absolute_error(y, predictions)
+    esr = ESR(y, predictions)
+    rmse = RMSE(y, predictions)
 
     results_ = {'mse': mse, 'mae': mae, 'esr': esr, 'rmse': rmse}
 

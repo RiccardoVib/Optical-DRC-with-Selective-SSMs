@@ -8,12 +8,11 @@ import matplotlib.pyplot as plt
 
 class DataGeneratorPicklesCL1B(Sequence):
 
-    def __init__(self, data_dir, filename, input_size, batch_size=10):
+    def __init__(self, data_dir, filename, input_size, mini_batch_size=1, batch_size=9, set='train', model=None):
         """
-        Initializes a data generator object for the CL1B dataset
-          :param filename: the name of the dataset
+        Initializes a data generator object
           :param data_dir: the directory in which data are stored
-          :param input_size: the input size
+          :param output_size: output size
           :param batch_size: The size of each batch returned by __getitem__
         """
 
@@ -21,58 +20,67 @@ class DataGeneratorPicklesCL1B(Sequence):
         self.filename = filename
         self.count = 0
         self.batch_size = batch_size
+        self.mini_batch_size = mini_batch_size
         self.window = input_size
-        
-        # prepare the input, target and conditioning matrix
-        self.x, self.y, self.z, rep, lim = self.prepareXYZ(data_dir, filename)
+        self.model = model
 
-        self.training_steps = (lim // self.batch_size)
+        self.set = set
+
+        self.x, self.y, self.z = self.prepareXYZ(data_dir, filename)
+        assert self.x.shape[0] % self.batch_size == 0
+
+        self.idj = 0
+        self.idx = -1
+
+        self.max_1 = (self.x.shape[1] // self.mini_batch_size)
+        self.max_2 = (self.x.shape[0] // self.batch_size)
+        self.max = self.max_1 * self.max_2
+        self.training_steps = self.max
         self.on_epoch_end()
 
     def prepareXYZ(self, data_dir, filename):
-        # load all the audio files
         file_data = open(os.path.normpath('/'.join([data_dir, filename])), 'rb')
         Z = pickle.load(file_data)
         x = np.array(Z['x'][:, :], dtype=np.float32)
-        y = np.array(Z['y'][:, :], dtype=np.float32)
-        
-        # if input is shared to all the targets, it is repeat accordingly to the number of target audio files
-        if x.shape[0] == 1:
-           x = np.repeat(x, y.shape[0], axis=0)
+        y = np.array(Z['y'][: :], dtype=np.float32)
 
-        # windowing the signal to avoid misalignments
+        if self.set == 'test':
+
+            x = x[:, :x.shape[1] // 4]
+            y = y[:, :y.shape[1] // 4]
+
         x = x * np.array(tukey(x.shape[1], alpha=0.000005), dtype=np.float32).reshape(1, -1)
         y = y * np.array(tukey(x.shape[1], alpha=0.000005), dtype=np.float32).reshape(1, -1)
+
+        if x.shape[0] == 1:
+            x = np.repeat(x, y.shape[0], axis=0)
+
         z = np.array(Z['z'], dtype=np.float32)
         del Z
-        
-        # reshape to one dimension
-        rep = x.shape[1]
-        x = x.reshape(-1)
-        y = y.reshape(-1)
-        
-        # how many iterations are needed
-        N = int((x.shape[0] - self.window) / self.batch_size)-1
-        
-        # remove the last samples if not enough for a batch
-        lim = int(N * self.batch_size) + self.window
-        x = x[:lim]
-        y = y[:lim]
-        z = np.repeat(z, rep, axis=0)
 
-        return x, y, z, rep, lim
+        rep = x.shape[1]
+
+        N = int((x.shape[1] - self.window) / self.mini_batch_size) #how many iteration
+        lim = int(N * self.mini_batch_size) #how many samples
+        x = x[:, :lim]
+        y = y[:, :lim]
+        if z.shape[0] < z.shape[1]:
+            z = z.T
+        z = np.repeat(z[:,np.newaxis,:], rep, axis=1)
+
+        return x, y, z
 
     def on_epoch_end(self):
-        # create/reset the vector containing the indices of the batches
-        self.indices = np.arange(self.window, self.x.shape[0]+1)
-        self.count = 0
-
-    def reset_indices(self):
-        self.indices = np.arange(self.window, self.x.shape[0]+1)
+        self.indices = np.arange(self.window, self.x.shape[1])
+        self.indices2 = np.arange(-1, self.x.shape[0])
+        self.idj = 0
+        self.idx = -1
+        self.model.layers[4].reset_states()
+        self.model.layers[12].reset_states()
+        self.model.layers[13].reset_states()
 
     def __len__(self):
-        # compute the needed number of iteration before conclude one epoch
-        return int((self.x.shape[0]) / self.batch_size)
+        return int(self.max)
 
     def __call__(self):
         for i in range(self.__len__()):
@@ -81,95 +89,112 @@ class DataGeneratorPicklesCL1B(Sequence):
                 self.on_epoch_end()
 
     def __getitem__(self, idx):
-        # Initializing input, target, and conditioning batches
-        X = np.empty((self.batch_size, self.window))
-        Y = np.empty((self.batch_size, 1))
-        Z = np.empty((self.batch_size, 4))
+        ## Initializing Batch
+        X = np.zeros((self.batch_size, self.mini_batch_size, self.window))
+        Y = np.zeros((self.batch_size, self.mini_batch_size, 1))
+        Z = np.zeros((self.batch_size, self.mini_batch_size, 4))
+
+        if idx % self.max_1 - 1 == 0:
+            self.idj += 1
+            self.idx = -1
+            self.model.layers[4].reset_states()
+            self.model.layers[12].reset_states()
+            self.model.layers[13].reset_states()
+        self.idx += 1
 
         # get the indices of the requested batch
-        indices = self.indices[idx*self.batch_size:(idx+1)*self.batch_size]
+        indices = self.indices[self.idx*self.mini_batch_size:(self.idx+1)*self.mini_batch_size]
+        indices2 = self.indices2[self.idj*self.batch_size:(self.idj+1)*self.batch_size]
         c = 0
-        # fill the batches
+
         for t in range(indices[0], indices[-1]+1, 1):
-            X[c, :] = np.array(self.x[t - self.window: t])
-            Y[c, :] = np.array(self.y[t-1])
-            Z[c, :] = np.array(self.z[t-1])
+            X[:, c, :] = np.array(self.x[indices2, t - self.window: t])
+            Y[:, c, :] = np.array(self.y[indices2, t-1:t])
+            Z[:, c, :] = np.array(self.z[indices2, t-1])
             c = c + 1
 
-        Z1 = Z[:, :2]
-        Z2 = Z[:, 2:]
+        Z1 = Z[:, :, :2]
+        Z2 = Z[:, :, 2:]
 
         Xf = np.abs(scipy.fft.rfft(X, n=(8*32)-1))
 
         return [Z1, Z2, Xf, X], Y
 
-
 class DataGeneratorPicklesLA2A(Sequence):
 
-    def __init__(self, data_dir, filename, input_size, batch_size=10):
+    def __init__(self, data_dir, filename, input_size, mini_batch_size=1, batch_size=9, set='train', model=None):
         """
-        Initializes a data generator object for the LA2A dataset
-          :param filename: the name of the dataset
+        Initializes a data generator object
           :param data_dir: the directory in which data are stored
-          :param input_size: the input size
+          :param output_size: output size
           :param batch_size: The size of each batch returned by __getitem__
         """
+
         self.data_dir = data_dir
         self.filename = filename
         self.count = 0
         self.batch_size = batch_size
+        self.mini_batch_size = mini_batch_size
         self.window = input_size
+        self.model = model
 
-        # prepare the input, target and conditioning matrix
-        self.x, self.y, self.z, rep, lim = self.prepareXYZ(data_dir, filename)
+        self.set = set
 
-        self.training_steps = (lim // self.batch_size)
+        self.x, self.y, self.z = self.prepareXYZ(data_dir, filename)
+        assert self.x.shape[0] % self.batch_size == 0
+
+        self.idj = 0
+        self.idx = -1
+
+        self.max_1 = (self.x.shape[1] // self.mini_batch_size)
+        self.max_2 = (self.x.shape[0] // self.batch_size)
+        self.max = self.max_1 * self.max_2
+        self.training_steps = self.max
         self.on_epoch_end()
 
     def prepareXYZ(self, data_dir, filename):
-        # load all the audio files
         file_data = open(os.path.normpath('/'.join([data_dir, filename])), 'rb')
         Z = pickle.load(file_data)
         x = np.array(Z['x'][:, :], dtype=np.float32)
-        y = np.array(Z['y'][:, :], dtype=np.float32)
+        y = np.array(Z['y'][: :], dtype=np.float32)
 
-        # if input is shared to all the targets, it is repeated accordingly to the number of target audio files
-        if x.shape[0] == 1:
-           x = np.repeat(x, y.shape[0], axis=0)
-            
-        # windowing the signal to avoid misalignments
+        if self.set == 'test':
+
+            x = x[:, :x.shape[1] // 4]
+            y = y[:, :y.shape[1] // 4]
+
         x = x * np.array(tukey(x.shape[1], alpha=0.000005), dtype=np.float32).reshape(1, -1)
         y = y * np.array(tukey(x.shape[1], alpha=0.000005), dtype=np.float32).reshape(1, -1)
+
+        if x.shape[0] == 1:
+            x = np.repeat(x, y.shape[0], axis=0)
+
         z = np.array(Z['z'], dtype=np.float32)
         del Z
 
-        # reshape to one dimension
         rep = x.shape[1]
-        x = x.reshape(-1)
-        y = y.reshape(-1)
-        
-        # how many iterations are needed
-        N = int((x.shape[0] - self.window) / self.batch_size)-1
-        
-        # how many total samples is the audio
-        lim = int(N * self.batch_size) + self.window
-        x = x[:lim]
-        y = y[:lim]
-        z = np.repeat(z, rep, axis=0)
 
-        return x, y, z, rep, lim
+        N = int((x.shape[1] - self.window) / self.mini_batch_size) #how many iteration
+        lim = int(N * self.mini_batch_size) #how many samples
+        x = x[:, :lim]
+        y = y[:, :lim]
+        if z.shape[0] < z.shape[1]:
+            z = z.T
+        z = np.repeat(z[:,np.newaxis,:], rep, axis=1)
+
+        return x, y, z
 
     def on_epoch_end(self):
-        # create/reset the vector containing the indices of the batches
-        self.indices = np.arange(self.window, self.x.shape[0]+1)
-        self.count = 0
-
-    def reset_indices(self):
-        self.indices = np.arange(self.window, self.x.shape[0]+1)
+        self.indices = np.arange(self.window, self.x.shape[1])
+        self.indices2 = np.arange(-1, self.x.shape[0])
+        self.idj = 0
+        self.idx = -1
+        self.model.layers[4].reset_states()
+        self.model.layers[12].reset_states()
+        self.model.layers[13].reset_states()
 
     def __len__(self):
-        # compute the needed number of iteration before conclude one epoch
-        return int((self.x.shape[0]) / self.batch_size)
+        return int(self.max)
 
     def __call__(self):
         for i in range(self.__len__()):
@@ -178,18 +203,28 @@ class DataGeneratorPicklesLA2A(Sequence):
                 self.on_epoch_end()
 
     def __getitem__(self, idx):
-        # Initializing input, target, and conditioning batches
-        X = np.empty((self.batch_size, self.window))
-        Y = np.empty((self.batch_size, 1))
-        Z = np.empty((self.batch_size, 2))
+        ## Initializing Batch
+        X = np.zeros((self.batch_size, self.mini_batch_size, self.window))
+        Y = np.zeros((self.batch_size, self.mini_batch_size, 1))
+        Z = np.zeros((self.batch_size, self.mini_batch_size, 4))
+
+        if idx % self.max_1 - 1 == 0:
+            self.idj += 1
+            self.idx = -1
+            self.model.layers[4].reset_states()
+            self.model.layers[12].reset_states()
+            self.model.layers[13].reset_states()
+        self.idx += 1
 
         # get the indices of the requested batch
-        indices = self.indices[idx*self.batch_size:(idx+1)*self.batch_size]
+        indices = self.indices[self.idx*self.mini_batch_size:(self.idx+1)*self.mini_batch_size]
+        indices2 = self.indices2[self.idj*self.batch_size:(self.idj+1)*self.batch_size]
         c = 0
+
         for t in range(indices[0], indices[-1]+1, 1):
-            X[c, :] = np.array(self.x[t - self.window: t])
-            Y[c, :] = np.array(self.y[t-1])
-            Z[c, :] = np.array(self.z[t-1])
+            X[:, c, :] = np.array(self.x[indices2, t - self.window: t])
+            Y[:, c, :] = np.array(self.y[indices2, t-1:t])
+            Z[:, c, :] = np.array(self.z[indices2, t-1])
             c = c + 1
 
         Z1 = Z[:, :1]

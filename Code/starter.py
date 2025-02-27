@@ -10,7 +10,8 @@ main script
 data_dir = '../../Files/'
 epochs = 200
 units = 6 # number of model's units
-batch_size = 600*4 # batch size
+mini_batch_size = 600*4 # mini_batch size
+batch_size = 1 # batch size
 lr = 3e-4 # initial learning rate
 
 name_model = ''
@@ -26,6 +27,7 @@ for model in models:
             dataset=comp+'/'+comp+dataset,
             comp=comp,
             batch_size=batch_size,
+            mini_batch_size=mini_batch_size,
             learning_rate=lr,
             units=units,
             epochs=epochs,
