@@ -1,7 +1,7 @@
 import tensorflow as tf
-from Mamba_states import MambaLay
+from Mamba import MambaLay
+from SSMs import S4D, S6
 from Layers import FiLM, TemporalFiLM
-from S4D import S4D
 
 
 def create_model_ED_original(mini_batch_size, input_dim, units, b_size=600, comp='', stateful=True):
@@ -106,7 +106,7 @@ def create_model_LSTM32_baseline(mini_batch_size, input_dim, b_size=600, comp=''
     return model
 
 
-def create_model_LSTM(mini_batch_size, input_dim, b_size=600, comp='', stateful=True):
+def create_model_LSTM9(mini_batch_size, input_dim, b_size=600, comp='', stateful=True):
     inp = tf.keras.layers.Input(batch_shape=(b_size, mini_batch_size, input_dim), name='input')
 
     x = tf.keras.layers.Dense(2)(inp)
@@ -218,12 +218,11 @@ def create_model_ED_CNN(mini_batch_size, input_dim, units, b_size=600, comp='', 
 
     return model
 
-
-def create_model_S4D(mini_batch_size, input_dim, units, b_size=600, comp=''):
+def create_model_S4D(mini_batch_size, input_dim, units, b_size=600, comp='', stateful=False):
     inp = tf.keras.layers.Input(batch_shape=(b_size, mini_batch_size, input_dim), name='input')
     x = tf.keras.layers.Dense(2)(inp)
 
-    x = S4D(d_state=units, d_model=1, b_size=b_size, hippo=True)(x)
+    x = S4D(model_states=units, model_input_dims=2, batch_size=b_size, mini_batch_size=mini_batch_size, stateful=stateful, hippo=True)(x)
 
     x = tf.keras.layers.Dense(2, activation=tf.nn.gelu)(x)
 
@@ -242,7 +241,7 @@ def create_model_S4D(mini_batch_size, input_dim, units, b_size=600, comp=''):
         z2 = tf.keras.layers.Input(batch_shape=(b_size, mini_batch_size, 2), name='params_inputs2')
         c2 = tf.concat([z2, features], axis=-1)
         #c2 = tf.expand_dims(c2, axis=1)
-        x = TemporalFiLM(2)(x, c2)
+        x = TemporalFiLM(2, stateful=stateful)(x, c2)
 
     elif comp == 'LA2A':
         # peak reduction
@@ -255,10 +254,64 @@ def create_model_S4D(mini_batch_size, input_dim, units, b_size=600, comp=''):
         # switch
         c2 = features
         #c2 = tf.expand_dims(c2, axis=1)
-        x = TemporalFiLM(2)(x, c2)
+        x = TemporalFiLM(2, stateful=stateful)(x, c2)
     ###########
 
-    x = S4D(d_state=units, d_model=1, b_size=b_size, hippo=True)(x)
+    x = S4D(model_states=units, model_input_dims=2, batch_size=b_size, mini_batch_size=mini_batch_size, stateful=stateful, hippo=True)(x)
+    x = tf.keras.layers.Dense(2, activation=tf.nn.gelu)(x)
+
+    x = tf.keras.layers.Dense(1, name='OutLayer')(x)
+    x = tf.keras.layers.Multiply()([inp[:, -1], x])
+
+    if comp == 'CL1B':
+        model = tf.keras.models.Model(inputs=[z, z2, f, inp], outputs=x, name='S4D')
+    elif comp == 'LA2A':
+        model = tf.keras.models.Model(inputs=[z, z2, f, inp], outputs=x, name='S4D')
+
+    model.summary()
+
+    return model
+
+def create_model_S6(mini_batch_size, input_dim, units, b_size=600, comp='', stateful=False):
+    inp = tf.keras.layers.Input(batch_shape=(b_size, mini_batch_size, input_dim), name='input')
+    x = tf.keras.layers.Dense(2)(inp)
+
+    x = S6(model_states=units, model_input_dims=2, batch_size=b_size, mini_batch_size=mini_batch_size, stateful=stateful)(x)
+
+    x = tf.keras.layers.Dense(2, activation=tf.nn.gelu)(x)
+
+    f = tf.keras.layers.Input(batch_shape=(b_size, mini_batch_size, 128, 1), name='features_input')
+    features = tf.keras.layers.Conv1D(2, 128)(f)
+    features = tf.squeeze(features, axis=2)
+
+    if comp == 'CL1B':
+        # threshold and ratio
+        z = tf.keras.layers.Input(batch_shape=(b_size, mini_batch_size, 2), name='params_inputs')
+
+        c = tf.concat([z, features], axis=-1)
+        x = FiLM(2)(x, c)
+
+        # attack and release
+        z2 = tf.keras.layers.Input(batch_shape=(b_size, mini_batch_size, 2), name='params_inputs2')
+        c2 = tf.concat([z2, features], axis=-1)
+        #c2 = tf.expand_dims(c2, axis=1)
+        x = TemporalFiLM(2, stateful=stateful)(x, c2)
+
+    elif comp == 'LA2A':
+        # peak reduction
+        z = tf.keras.layers.Input(batch_shape=(b_size, mini_batch_size, 1), name='params_inputs')
+        z2 = tf.keras.layers.Input(batch_shape=(b_size, mini_batch_size, 1), name='params_inputs2')
+        c = tf.concat([z, z2], axis=-1)
+        c = tf.concat([c, features], axis=-1)
+        x = FiLM(2)(x, c)
+
+        # switch
+        c2 = features
+        #c2 = tf.expand_dims(c2, axis=1)
+        x = TemporalFiLM(2, stateful=stateful)(x, c2)
+    ###########
+
+    x = S6(model_states=units, model_input_dims=2, batch_size=b_size, mini_batch_size=mini_batch_size, stateful=stateful)(x)
     x = tf.keras.layers.Dense(2, activation=tf.nn.gelu)(x)
 
     x = tf.keras.layers.Dense(1, name='OutLayer')(x)
@@ -280,7 +333,7 @@ def create_model_Mamba(mini_batch_size, b_size, input_dims=64, model_input_dims=
     x = tf.keras.layers.Dense(2)(inp)  #####
 
     x = MambaLay(model_states=model_states, projection_expand_factor=projection_expand_factor, model_input_dims=2,
-                 conv_kernel_size=conv_kernel_size, batch_size=b_size, stateful=stateful)(x)
+                 conv_kernel_size=conv_kernel_size, batch_size=b_size, mini_batch_size=mini_batch_size, stateful=stateful)(x)
 
     x = tf.keras.layers.Dense(2, activation=tf.nn.gelu)(x)
 
@@ -316,7 +369,7 @@ def create_model_Mamba(mini_batch_size, b_size, input_dims=64, model_input_dims=
 
     x = MambaLay(model_states=model_states, projection_expand_factor=projection_expand_factor,
                  model_input_dims=model_input_dims,
-                 conv_kernel_size=conv_kernel_size, batch_size=b_size, stateful=stateful)(x)
+                 conv_kernel_size=conv_kernel_size, batch_size=b_size, mini_batch_size=mini_batch_size, stateful=stateful)(x)
 
     x = tf.keras.layers.Dense(2, activation=tf.nn.gelu)(x)  ####
 

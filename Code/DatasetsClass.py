@@ -18,12 +18,10 @@ class DataGeneratorPicklesCL1B(Sequence):
 
         self.data_dir = data_dir
         self.filename = filename
-        self.count = 0
         self.batch_size = batch_size
         self.mini_batch_size = mini_batch_size
         self.window = input_size
         self.model = model
-
         self.set = set
 
         self.x, self.y, self.z = self.prepareXYZ(data_dir, filename)
@@ -43,11 +41,6 @@ class DataGeneratorPicklesCL1B(Sequence):
         Z = pickle.load(file_data)
         x = np.array(Z['x'][:, :], dtype=np.float32)
         y = np.array(Z['y'][: :], dtype=np.float32)
-
-        if self.set == 'test':
-
-            x = x[:, :x.shape[1] // 4]
-            y = y[:, :y.shape[1] // 4]
 
         x = x * np.array(tukey(x.shape[1], alpha=0.000005), dtype=np.float32).reshape(1, -1)
         y = y * np.array(tukey(x.shape[1], alpha=0.000005), dtype=np.float32).reshape(1, -1)
@@ -132,12 +125,10 @@ class DataGeneratorPicklesLA2A(Sequence):
 
         self.data_dir = data_dir
         self.filename = filename
-        self.count = 0
         self.batch_size = batch_size
         self.mini_batch_size = mini_batch_size
         self.window = input_size
         self.model = model
-
         self.set = set
 
         self.x, self.y, self.z = self.prepareXYZ(data_dir, filename)
@@ -157,11 +148,6 @@ class DataGeneratorPicklesLA2A(Sequence):
         Z = pickle.load(file_data)
         x = np.array(Z['x'][:, :], dtype=np.float32)
         y = np.array(Z['y'][: :], dtype=np.float32)
-
-        if self.set == 'test':
-
-            x = x[:, :x.shape[1] // 4]
-            y = y[:, :y.shape[1] // 4]
 
         x = x * np.array(tukey(x.shape[1], alpha=0.000005), dtype=np.float32).reshape(1, -1)
         y = y * np.array(tukey(x.shape[1], alpha=0.000005), dtype=np.float32).reshape(1, -1)
