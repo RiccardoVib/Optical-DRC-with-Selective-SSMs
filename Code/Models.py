@@ -1,14 +1,13 @@
 import tensorflow as tf
 from Mamba import MambaLay
-from SSMs import S4D, S6
+from S4D import S4D
 from Layers import FiLM, TemporalFiLM
 
 
-def create_model_ED_original(mini_batch_size, input_dim, units, b_size=600, comp='', stateful=True):
+def create_model_ED_baseline(mini_batch_size, input_dim, units, b_size=600, comp='', stateful=True):
     inp = tf.keras.layers.Input(batch_shape=(b_size, mini_batch_size, input_dim), name='input')
     encoder_inputs, decoder_inputs = tf.split(inp, [input_dim // 2, input_dim // 2], axis=-1)
 
-    #encoder_inputs = tf.expand_dims(encoder_inputs, axis=-1)
     state_h = tf.keras.layers.Conv1D(units // 3, input_dim // 2, name='Conv_h')(encoder_inputs)
     state_c = tf.keras.layers.Conv1D(units // 3, input_dim // 2, name='Conv_c')(encoder_inputs)
 
@@ -72,7 +71,7 @@ def create_model_ED_original(mini_batch_size, input_dim, units, b_size=600, comp
     return model
 
 
-def create_model_LSTM32_baseline(mini_batch_size, input_dim, b_size=600, comp='', stateful=True):
+def create_model_LSTM_baseline(mini_batch_size, input_dim, b_size=600, comp='', stateful=True):
     inp = tf.keras.layers.Input(batch_shape=(b_size, mini_batch_size, input_dim), name='input')
 
     x = tf.keras.layers.Dense(1)(inp)
@@ -106,7 +105,7 @@ def create_model_LSTM32_baseline(mini_batch_size, input_dim, b_size=600, comp=''
     return model
 
 
-def create_model_LSTM9(mini_batch_size, input_dim, b_size=600, comp='', stateful=True):
+def create_model_LSTM(mini_batch_size, input_dim, b_size=600, comp='', stateful=True):
     inp = tf.keras.layers.Input(batch_shape=(b_size, mini_batch_size, input_dim), name='input')
 
     x = tf.keras.layers.Dense(2)(inp)
@@ -127,7 +126,6 @@ def create_model_LSTM9(mini_batch_size, input_dim, b_size=600, comp='', stateful
         # attack and release
         z2 = tf.keras.layers.Input(batch_shape=(b_size, mini_batch_size, 2), name='params_inputs2')
         c2 = tf.concat([z2, features], axis=-1)
-        #c2 = tf.expand_dims(c2, axis=1)
         x = TemporalFiLM(2)(x, c2)
 
     elif comp == 'LA2A':
@@ -140,7 +138,6 @@ def create_model_LSTM9(mini_batch_size, input_dim, b_size=600, comp='', stateful
 
         # switch
         c2 = features
-        #c2 = tf.expand_dims(c2, axis=1)
         x = TemporalFiLM(2)(x, c2)
     ###########
 
@@ -161,7 +158,6 @@ def create_model_LSTM9(mini_batch_size, input_dim, b_size=600, comp='', stateful
 
 def create_model_ED_CNN(mini_batch_size, input_dim, units, b_size=600, comp='', stateful=True):
     inp = tf.keras.layers.Input(batch_shape=(b_size, mini_batch_size, input_dim), name='input')
-    # encoder_inputs, decoder_inputs = tf.split(inp, [input_dim - 1, 1], axis=-1)
 
     x = tf.expand_dims(inp[:,0,:], axis=-1)
     h = tf.keras.layers.Conv1D(units // 2, input_dim, name='Conv_h')(x)
@@ -202,7 +198,6 @@ def create_model_ED_CNN(mini_batch_size, input_dim, units, b_size=600, comp='', 
 
         # switch
         c2 = features
-        #c2 = tf.expand_dims(c2, axis=1)
         x = TemporalFiLM(2)(x, c2)
     ###########
 
@@ -240,7 +235,6 @@ def create_model_S4D(mini_batch_size, input_dim, units, b_size=600, comp='', sta
         # attack and release
         z2 = tf.keras.layers.Input(batch_shape=(b_size, mini_batch_size, 2), name='params_inputs2')
         c2 = tf.concat([z2, features], axis=-1)
-        #c2 = tf.expand_dims(c2, axis=1)
         x = TemporalFiLM(2, stateful=stateful)(x, c2)
 
     elif comp == 'LA2A':
@@ -253,7 +247,6 @@ def create_model_S4D(mini_batch_size, input_dim, units, b_size=600, comp='', sta
 
         # switch
         c2 = features
-        #c2 = tf.expand_dims(c2, axis=1)
         x = TemporalFiLM(2, stateful=stateful)(x, c2)
     ###########
 
@@ -294,7 +287,6 @@ def create_model_S6(mini_batch_size, input_dim, units, b_size=600, comp='', stat
         # attack and release
         z2 = tf.keras.layers.Input(batch_shape=(b_size, mini_batch_size, 2), name='params_inputs2')
         c2 = tf.concat([z2, features], axis=-1)
-        #c2 = tf.expand_dims(c2, axis=1)
         x = TemporalFiLM(2, stateful=stateful)(x, c2)
 
     elif comp == 'LA2A':
@@ -307,7 +299,6 @@ def create_model_S6(mini_batch_size, input_dim, units, b_size=600, comp='', stat
 
         # switch
         c2 = features
-        #c2 = tf.expand_dims(c2, axis=1)
         x = TemporalFiLM(2, stateful=stateful)(x, c2)
     ###########
 

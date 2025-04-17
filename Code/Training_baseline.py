@@ -1,10 +1,9 @@
 import os
 import tensorflow as tf
 from UtilsForTrainings import plotTraining, writeResults, checkpoints, predictWaves, MyLRScheduler
-from Models import create_model_ED_original, create_model_LSTM_baseline
+from Models import create_model_ED_baseline, create_model_LSTM_baseline
 from DatasetsClass_baseline import DataGeneratorPicklesCL1B, DataGeneratorPicklesLA2A
 import numpy as np
-import random
 from Metrics import ESR, RMSE
 import sys
 import time
@@ -73,7 +72,7 @@ def train(**kwargs):
     if model_name == 'LSTMb':
         model = create_model_LSTM_baseline(input_dim=w, mini_batch_size=mini_batch_size, b_size=batch_size, comp=comp)
     elif model_name == 'EDb':
-        model = create_model_ED_original(input_dim=w, mini_batch_size=mini_batch_size, units=units, b_size=batch_size, comp=comp)
+        model = create_model_ED_baseline(input_dim=w, mini_batch_size=mini_batch_size, units=units, b_size=batch_size, comp=comp)
 
     # create the DataGenerator object to retrieve the data
     train_gen = data_generator(data_dir, dataset + '_train.pickle', input_size=w, mini_batch_size=mini_batch_size,

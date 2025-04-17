@@ -4,7 +4,6 @@ import numpy as np
 from tensorflow.keras.utils import Sequence
 from scipy.signal.windows import tukey
 import scipy.fft
-import matplotlib.pyplot as plt
 
 class DataGeneratorPicklesCL1B(Sequence):
 
