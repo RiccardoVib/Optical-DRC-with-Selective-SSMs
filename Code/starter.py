@@ -12,7 +12,7 @@ def parse_args():
 
     parser.add_argument('--data_dir', default='./datasets', type=str, nargs='?', help='Folder directory in which the datasets are stored.')
 
-    parser.add_argument('--datasets', default=[" "], type=str, nargs='+', help='The names of the datasets to use. Datasets = [LA2A, CL1B].')
+    parser.add_argument('--datasets', default=" ", type=str, nargs='+', help='The names of the datasets to use. Datasets = [LA2A, CL1B].')
 
     parser.add_argument('--comp', default=[" "], nargs='+', help='The names of the device to consider. [LA2A, CL1B].')
 
@@ -24,7 +24,7 @@ def parse_args():
 
     parser.add_argument('--mini_batch_size', default=2048, type=int, nargs='?', help='Mini batch size.')
 
-    parser.add_argument('--units', default=8, nargs='+', help='Hidden layer sizes (amount of units) of the network.')
+    parser.add_argument('--units', default=8, nargs='+', type=int, help='Hidden layer sizes (amount of units) of the network.')
 
     parser.add_argument('--learning_rate', default=3e-4, type=float, nargs='?', help='Initial learning rate.')
 
