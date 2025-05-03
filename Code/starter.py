@@ -12,7 +12,7 @@ def parse_args():
 
     parser.add_argument('--data_dir', default='./datasets', type=str, nargs='?', help='Folder directory in which the datasets are stored.')
 
-    parser.add_argument('--datasets', default=[" "], nargs='+', help='The names of the datasets to use. Datasets = [LA2A, CL1B].')
+    parser.add_argument('--datasets', default=[" "], type=str, nargs='+', help='The names of the datasets to use. Datasets = [LA2A, CL1B].')
 
     parser.add_argument('--comp', default=[" "], nargs='+', help='The names of the device to consider. [LA2A, CL1B].')
 
