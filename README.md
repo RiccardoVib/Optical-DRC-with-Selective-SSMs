@@ -7,6 +7,28 @@ This repository contains all the necessary utilities to use our architectures. F
 
 Visit our companion page with [Audio Samples](https://riccardovib.github.io/Optical-DRC-SSM_pages/)
 
+### Folder Structure
+
+```
+./src
+├── code
+└── Weights
+    ├── CL1B_analog
+    │   ├── ED-CNNCL1B_analog
+    │   ├── EDbaselineCL1B_analog
+    │   ├── LSTMbaselineCL1B_analog
+    │   ├── LSTMCL1B_analog
+    │   ├── MambaCL1B_analog
+    │   └── S4DCL1B_analog
+    └── LA2A_analog
+        ├── ED-CNNLA2A_analog
+        ├── EDbaselineLA2A_analog
+        ├── LSTMbaselineLA2A_analog
+        ├── LSTMLA2A_analog
+        ├── MambaLA2A_analog
+        └── S4DLA2A_analog
+```
+
 ### Contents
 
 1. [Datasets](#datasets)
@@ -67,3 +89,20 @@ python starter.py --datasets LA2A --comp LA2A --model LSTM --only_inference True
 # VST Download
 
 Coming soon...
+
+# Bibtex
+
+If you use the code included in this repository or any part of it, please acknowledge 
+its authors by adding a reference to these publications:
+
+```
+@article{simionato2025modeling,
+  title={Modeling Time-Variant Responses of Optical Compressors with Selective State Space Models},
+  author={Simionato, Riccardo and Fasciani, Stefano},
+  journal={Journal of Audio Engineering Society},
+  volume={73},
+  number={3},
+  pages={144–165},
+  year={2025}
+}
+```

@@ -1,9 +1,29 @@
+# Copyright (C) 2023 Riccardo Simionato, University of Oslo
+# Inquiries: riccardo.simionato.vib@gmail.com.com
+#
+# This code is free software: you can redistribute it and/or modify it under the terms
+# of the GNU Lesser General Public License as published by the Free Software Foundation,
+# either version 3 of the License, or (at your option) any later version.
+#
+# This code is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+# without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the GNU Less General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License along with this code.
+# If not, see <http://www.gnu.org/licenses/>.
+#
+# If you use this code or any part of it in any program or publication, please acknowledge
+# its authors by adding a reference to this publication:
+#
+# R. Simionato, 2025, "Modeling Time-Variant Responses of Optical Compressors with Selective State Space Models" in Journal of Audio Engineering Society.
+
+
 import tensorflow as tf
 from einops import rearrange, repeat
 import numpy as np
 import math
 
-#### from https://github.com/state-spaces/mamba & https://github.com/PeaBrane/mamba-tiny
+#### The code is adapted from https://github.com/state-spaces/mamba & https://github.com/PeaBrane/mamba-tiny
 
 
 def selective_scan(u, delta, A, B, C, D, last_state, stateful, L):

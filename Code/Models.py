@@ -1,3 +1,23 @@
+# Copyright (C) 2023 Riccardo Simionato, University of Oslo
+# Inquiries: riccardo.simionato.vib@gmail.com.com
+#
+# This code is free software: you can redistribute it and/or modify it under the terms
+# of the GNU Lesser General Public License as published by the Free Software Foundation,
+# either version 3 of the License, or (at your option) any later version.
+#
+# This code is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+# without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the GNU Less General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License along with this code.
+# If not, see <http://www.gnu.org/licenses/>.
+#
+# If you use this code or any part of it in any program or publication, please acknowledge
+# its authors by adding a reference to this publication:
+#
+# R. Simionato, 2025, "Modeling Time-Variant Responses of Optical Compressors with Selective State Space Models" in Journal of Audio Engineering Society.
+
+
 import tensorflow as tf
 from Mamba import MambaLay
 from S4D import S4D
@@ -369,9 +389,9 @@ def create_model_Mamba(mini_batch_size, b_size, input_dims=64, model_input_dims=
     x = tf.keras.layers.Multiply()([inp[:, :, -1:], x])
 
     if comp == 'CL1B':
-        model = tf.keras.models.Model(inputs=[z, z2, f, inp], outputs=x, name='Bamba')
+        model = tf.keras.models.Model(inputs=[z, z2, f, inp], outputs=x, name='Mamba')
     elif comp == 'LA2A':
-        model = tf.keras.models.Model(inputs=[z, z2, f, inp], outputs=x, name='Bamba')
+        model = tf.keras.models.Model(inputs=[z, z2, f, inp], outputs=x, name='Mamba')
     model.summary()
 
     return model
