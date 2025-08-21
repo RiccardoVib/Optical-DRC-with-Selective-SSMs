@@ -24,7 +24,7 @@ import numpy as np
 import math
 
 '''
-code is adapted from https://github.com/state-spaces/mamba & https://github.com/PeaBrane/mamba-tiny
+code adapted from https://github.com/state-spaces/mamba & https://github.com/PeaBrane/mamba-tiny
 '''
 
 def selective_scan(u, delta, A, B, C, D, last_state, stateful, L):
