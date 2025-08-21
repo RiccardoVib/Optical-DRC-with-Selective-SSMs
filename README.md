@@ -11,7 +11,7 @@ Visit our companion page with [Audio Samples](https://riccardovib.github.io/Opti
 
 ```
 ./src
-├── code
+├── Code
 └── Weights
     ├── CL1B_analog
     │   ├── ED-CNNCL1B_analog
