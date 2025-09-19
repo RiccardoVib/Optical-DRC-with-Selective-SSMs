@@ -88,7 +88,7 @@ python starter.py --datasets LA2A --comp LA2A --model LSTM --only_inference True
 
 # VST Download
 
-Coming soon...
+[VSTs](https://github.com/RiccardoVib/NeuralModelsVST/tree/main)
 
 # Bibtex
 
