@@ -28,33 +28,39 @@ from scipy.io import wavfile
 
 class MyLRScheduler(tf.keras.optimizers.schedules.LearningRateSchedule):
     """
-    Define the learning schedule
-      :param initial_learning_rate: the initial learning rate [float]
-      :param training_steps: the number of total training steps (iterations) [int]
+    Custom learning rate scheduler that implements exponential decay.
+    
+    :param initial_learning_rate: the initial learning rate [float]
+    :param training_steps: the number of total training steps (iterations) [int]
     """
     def __init__(self, initial_learning_rate, training_steps):
         self.initial_learning_rate = initial_learning_rate
         self.steps = training_steps * 30
 
     def __call__(self, step):
+        # Calculate learning rate using exponential decay: lr = initial_lr * (0.25 ^ (step / steps))
+        # This reduces the learning rate to 25% of its value every 'steps' iterations
         lr = tf.cast(self.initial_learning_rate * (0.25 ** (tf.cast(step / self.steps, dtype=tf.float32))),
                      dtype=tf.float32)
-        return lr#tf.math.maximum(lr, 1e-6)
+        # Return the computed learning rate (optional minimum threshold)
+        return lr #tf.math.maximum(lr, 1e-6)
 
 def writeResults(results, units, epochs, b_size, learning_rate, model_save_dir,
                  save_folder,
                  index):
     """
-    write to a text the result and parameters of the training
-      :param results: the results from the fit function [dictionary]
-      :param units: the number of model's units [int]
-      :param epochs: the number of epochs [int]
-      :param b_size: the batch size [int]
-      :param model_save_dir: the director where the models are saved [string]
-      :param save_folder: the director where the model is saved [string]
-      :param index: index for naming the file [string]
-
+    Write training results and hyperparameters to text and pickle files.
+    
+    :param results: the results from the fit function [dictionary]
+    :param units: the number of model's units [int]
+    :param epochs: the number of epochs [int]
+    :param b_size: the batch size [int]
+    :param learning_rate: the learning rate used for training [float]
+    :param model_save_dir: the directory where the models are saved [string]
+    :param save_folder: the directory where the model is saved [string]
+    :param index: index for naming the file [string]
     """
+    # Create a dictionary with key training metrics and hyperparameters
     results = {
         'Min_val_loss': np.min(results.history['val_loss']),
         'Min_train_loss': np.min(results.history['loss']),
@@ -75,19 +81,20 @@ def writeResults(results, units, epochs, b_size, learning_rate, model_save_dir,
 
 def plotResult(pred, inp, tar, model_save_dir, save_folder, fs, filename):
     """
-    Plot the rendered results
-      :param pred: the model's prediction  [array of floats]
-      :param inp: the input [array of floats]
-      :param tar: the target [array of floats]
-      :param model_save_dir: the director where the models are saved [string]
-      :param save_folder: the director where the model is saved [string]
-      :param fs: the sampling rate [int]
-      :param filename: the name of the file [string]
-      """
-
-    # the loop split the prediction in 5 second long extracts
+    Plot and save comparison of model predictions against input and target signals.
+    Creates multiple 5-second plots sampled from the full signal.
+    
+    :param pred: the model's prediction [array of floats]
+    :param inp: the input [array of floats]
+    :param tar: the target [array of floats]
+    :param model_save_dir: the directory where the models are saved [string]
+    :param save_folder: the directory where the model is saved [string]
+    :param fs: the sampling rate [int]
+    :param filename: the name of the file [string]
+    """
+    # Calculate number of 5-second segments in the signal
     l = len(inp) // (fs * 5)
-
+    # Loop through signal, sampling every 100th segment to avoid excessive plots
     for i in range(0, l - 1, 100):
         y = tar[i * fs * 5: (i + 1) * fs * 5]
         predictions = pred[i * fs * 5: (i + 1) * fs * 5]
@@ -104,14 +111,15 @@ def plotResult(pred, inp, tar, model_save_dir, save_folder, fs, filename):
 
 def plotTraining(loss_training, loss_val, model_save_dir, save_folder, name):
     """
-    Plot the training against the validation losses
-      :param loss_training: vector with training losses [array of floats]
-      :param loss_val: vector with validation losses [array of floats]
-      :param model_save_dir: the director where the models are saved [string]
-      :param save_folder: the director where the model is saved [string]
-      :param fs: the sampling rate [int]
-      :param filename: the name of the file [string]
+    Plot training and validation loss curves over epochs.
+    
+    :param loss_training: vector with training losses [array of floats]
+    :param loss_val: vector with validation losses [array of floats]
+    :param model_save_dir: the directory where the models are saved [string]
+    :param save_folder: the directory where the model is saved [string]
+    :param name: prefix for the output filename [string]
     """
+    # Create figure and plot both loss curves
     fig, ax = plt.subplots(nrows=1, ncols=1)
     ax.plot(np.array(loss_training), label='train'),
     ax.plot(np.array(loss_val), label='validation')
@@ -125,14 +133,15 @@ def plotTraining(loss_training, loss_val, model_save_dir, save_folder, name):
 
 def predictWaves(predictions, x_test, y_test, model_save_dir, save_folder, fs, filename):
     """
-    Render the prediction, target and input as wav audio file
-      :param pred: the model's prediction  [array of floats]
-      :param x_test: the input [array of floats]
-      :param y_test: the target [array of floats]
-      :param model_save_dir: the director where the models are saved [string]
-      :param save_folder: the director where the model is saved [string]
-      :param fs: the sampling rate [int]
-      :param filename: the name of the file [string]
+    Save model predictions, inputs, and targets as WAV audio files and generate comparison plots.
+    
+    :param predictions: the model's prediction [array of floats]
+    :param x_test: the input [array of floats]
+    :param y_test: the target [array of floats]
+    :param model_save_dir: the directory where the models are saved [string]
+    :param save_folder: the directory where the model is saved [string]
+    :param fs: the sampling rate [int]
+    :param filename: the name of the file [string]
     """
     pred_name = filename + '_pred.wav'
     inp_name = filename + '_inp.wav'
@@ -158,9 +167,12 @@ def predictWaves(predictions, x_test, y_test, model_save_dir, save_folder, fs, f
 
 def checkpoints(model_save_dir, save_folder):
     """
-    Define the path to the checkpoints saving the last and best epoch's weights
-      :param model_save_dir: the director where the models are saved [string]
-      :param save_folder: the director where the model is saved [string]
+    Setup TensorFlow checkpoint callbacks for saving model weights during training.
+    Creates callbacks for both best validation loss and latest epoch.
+    
+    :param model_save_dir: the directory where the models are saved [string]
+    :param save_folder: the directory where the model is saved [string]
+    :return: tuple of (best_checkpoint_callback, latest_checkpoint_callback, best_dir, latest_dir)
     """
     ckpt_path = os.path.normpath(
         os.path.join(model_save_dir, save_folder, 'Checkpoints', 'best', 'best.ckpt'))
