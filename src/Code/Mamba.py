@@ -27,7 +27,7 @@ import math
 code adapted from https://github.com/state-spaces/mamba & https://github.com/PeaBrane/mamba-tiny
 '''
 
-def selective_scan(u, delta, A, B, C, D, last_state, stateful, L):
+def selective_scan(u, delta, A, B, C, D, last_state, stateful):
     dA = tf.einsum('bld,dn->bldn', delta, A)
     dB_u = tf.einsum('bld,bld,bln->bldn', delta, u, B)
 
@@ -123,7 +123,7 @@ class MambaBlock(tf.keras.layers.Layer):
         last_state = self.state[:self.batch_size]
         res_state = self.state[self.batch_size:]
 
-        y, y_state = self.ssm(x, last_state=last_state, stateful=self.stateful, L=self.mini_batch_size)
+        y, y_state = self.ssm(x, last_state=last_state, stateful=self.stateful)
 
         if self.stateful:
             self.state.assign(tf.concat([y_state, res_state], axis=0))
@@ -145,7 +145,7 @@ class MambaBlock(tf.keras.layers.Layer):
 
         delta = tf.nn.softplus(self.delta_t_projection(delta))  # shape -> (batch, seq_len, model_input_dim)
 
-        y, y_state = selective_scan(x, delta, A, B, C, D, last_state, stateful, L)
+        y, y_state = selective_scan(x, delta, A, B, C, D, last_state, stateful)
 
         return y, y_state
 
