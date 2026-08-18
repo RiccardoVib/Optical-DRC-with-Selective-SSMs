@@ -102,9 +102,6 @@ class DataGeneratorPickles(Sequence):
         for layer in self.model.layers:
             reset = getattr(layer, "reset_states", None)
     
-            if reset is None:
-                reset = getattr(layer, "reset_states", None)
-    
             if callable(reset):
                 reset()
                 
