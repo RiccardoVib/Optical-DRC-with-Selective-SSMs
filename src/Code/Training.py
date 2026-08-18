@@ -30,6 +30,9 @@ import sys
 import time
 from Utils import has_numbers
 
+FS = 48000
+WINDOW = 64
+
 def train(**kwargs):
     """
       :param data_dir: the directory in which dataset are stored [string]
@@ -57,7 +60,6 @@ def train(**kwargs):
     epochs = kwargs.get('epochs', 60)
     mini_batch_size = kwargs.get('mini_batch_size', 1)
 
-
     # set all the seed in case reproducibility is desired
     #np.random.seed(422)
     #tf.random.set_seed(422)
@@ -75,8 +77,6 @@ def train(**kwargs):
     if len(gpu) != 0:
         tf.config.experimental.set_memory_growth(gpu[0], True)
 
-    fs = 48000
-    w = 64
     
     # define callbacks: where to store the weights
     callbacks = []
@@ -87,22 +87,22 @@ def train(**kwargs):
     while has_numbers(dataset_test[8:]):
         dataset_test = dataset_test[:-1]
 
-        if model_name == 'Mamba':
-            model = create_model_Mamba(mini_batch_size=mini_batch_size, b_size=batch_size, input_dims=w,
+    if model_name == 'Mamba':
+        model = create_model_Mamba(mini_batch_size=mini_batch_size, b_size=batch_size, input_dims=WINDOW,
                                        model_input_dims=1, model_states=units, comp=comp)
-        elif model_name == 'ED':
-            model = create_model_ED_CNN(mini_batch_size=1, input_dim=w, units=units, b_size=batch_size,
+    elif model_name == 'ED':
+        model = create_model_ED_CNN(mini_batch_size=1, input_dim=WINDOW, units=units, b_size=batch_size,
                                         comp=comp)
-        elif model_name == 'S4D':
-            model = create_model_S4D(mini_batch_size=mini_batch_size, input_dim=w, units=units, b_size=batch_size,
+    elif model_name == 'S4D':
+        model = create_model_S4D(mini_batch_size=mini_batch_size, input_dim=WINDOW, units=units, b_size=batch_size,
                                      comp=comp)
-        elif model_name == 'LSTM':
-            model = create_model_LSTM(mini_batch_size=mini_batch_size, input_dim=w, b_size=batch_size, comp=comp)
+    elif model_name == 'LSTM':
+        model = create_model_LSTM(mini_batch_size=mini_batch_size, input_dim=WINDOW, b_size=batch_size, comp=comp)
 
     # create the DataGenerator object to retrieve the data
-    train_gen = data_generator(data_dir, dataset + '_train.pickle', input_size=w, mini_batch_size=mini_batch_size,
+    train_gen = data_generator(data_dir, dataset + '_train.pickle', input_size=WINDOW, mini_batch_size=mini_batch_size,
                                batch_size=batch_size, model=model)
-    test_gen = data_generator(data_dir, dataset_test + '_test.pickle', input_size=w, mini_batch_size=mini_batch_size,
+    test_gen = data_generator(data_dir, dataset + '_test.pickle', input_size=WINDOW, mini_batch_size=mini_batch_size,
                               batch_size=batch_size, model=model)
 
     # the number of total training steps
@@ -206,7 +206,7 @@ def train(**kwargs):
     x = x.reshape(-1)
 
     # plot and render the output audio file, together with the input and target
-    predictWaves(predictions, x, y, model_save_dir, save_folder, fs, '0')
+    predictWaves(predictions, x, y, model_save_dir, save_folder, FS, '0')
 
     # compute test loss
     mse = tf.keras.metrics.mean_squared_error(y, predictions)
