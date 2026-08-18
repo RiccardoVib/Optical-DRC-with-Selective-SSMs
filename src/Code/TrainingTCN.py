@@ -32,6 +32,7 @@ from Utils import has_numbers
 
 COND = TRUE
 FS = 48000
+WINDOW = 13332
 
 
 def train(**kwargs):
@@ -82,16 +83,15 @@ def train(**kwargs):
         tf.config.experimental.set_memory_growth(gpu[0], True)
 
     inp_seg = int(FS*1.5)#300ms
-    out_seg = inp_seg-11999-11-119-1199-4
-    window = inp_seg - out_seg
+    out_seg = inp_seg - WINDOW
 
     # define callbacks: where to store the weights
     callbacks = []
     ckpt_callback, ckpt_callback_latest, ckpt_dir, ckpt_dir_latest = checkpoints(model_save_dir, save_folder, 0.0)
 
     # create the DataGenerator object to retrieve the data
-    test_gen = data_generator(data_dir, dataset + '_test.pickle', input_size=inp_seg, out_size=out_seg, window=window, cond=COND, batch_size=batch_size)
-    train_gen = data_generator(data_dir, dataset + '_train.pickle', input_size=inp_seg, out_size=out_seg,windoww=window, cond=COND, batch_size=batch_size)
+    test_gen = data_generator(data_dir, dataset + '_test.pickle', input_size=inp_seg, out_size=out_seg, window=WINDOW, cond=COND, batch_size=batch_size)
+    train_gen = data_generator(data_dir, dataset + '_train.pickle', input_size=inp_seg, out_size=out_seg,windoww=WINDOW, cond=COND, batch_size=batch_size)
 
     # the number of total training steps
     training_steps = train_gen.training_steps*epochs
@@ -107,8 +107,7 @@ def train(**kwargs):
                dilation_growth=10, channel_growth=1, channel_width=32)
         
     # compile the model with the optimizer and selected loss function
-    losses = 'mse'
-    model.compile(loss=losses, optimizer=opt)
+    model.compile(loss='mse', optimizer=opt)
     # if inference is True, it jump directly to the inference section without train the model
     if not inference:
         callbacks += [ckpt_callback, ckpt_callback_latest]
