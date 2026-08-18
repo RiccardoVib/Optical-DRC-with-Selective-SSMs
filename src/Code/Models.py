@@ -36,39 +36,37 @@ def create_model_ED_baseline(mini_batch_size, input_dim, units, b_size=600, comp
         # threshold and ratio
         z = tf.keras.layers.Input(batch_shape=(b_size, mini_batch_size, 2), name='params_inputs')
 
-        z_h = tf.keras.layers.Dense(units // 3, name='Dense_cond_h')(z)
-        z_c = tf.keras.layers.Dense(units // 3, name='Dense_cond_c')(z)
+        z_h = tf.keras.layers.Dense(units // 3, name='Dense_cond_h')(z[:, 0, :])
+        z_c = tf.keras.layers.Dense(units // 3, name='Dense_cond_c')(z[:, 0, :])
 
         states_h = tf.keras.layers.Add()([state_h[:, 0, :], z_h])
         states_c = tf.keras.layers.Add()([state_c[:, 0, :], z_c])
         # attack and release
         z2 = tf.keras.layers.Input(batch_shape=(b_size, mini_batch_size, 2), name='params_inputs2')
-        z2_ = tf.expand_dims(z2, axis=1)
 
-        z2_h = tf.keras.layers.GRU(units // 3, return_sequences=True, stateful=stateful,
-                                   name='GRU_cond_h')(z2_)
-        z2_c = tf.keras.layers.GRU(units // 3, return_sequences=True, stateful=stateful,
-                                   name='GRU_cond_c')(z2_)
-        states_h = tf.keras.layers.Add()([states_h, z2_h])
-        states_c = tf.keras.layers.Add()([states_c, z2_c])
+        z2_h = tf.keras.layers.GRU(units // 3, return_sequences=False, stateful=stateful,
+                                   name='GRU_cond_h')(z2)
+        z2_c = tf.keras.layers.GRU(units // 3, return_sequences=False, stateful=stateful,
+                                   name='GRU_cond_c')(z2)
+        states_h = tf.keras.layers.Add()([states_h, z2_h[:, 0, :]])
+        states_c = tf.keras.layers.Add()([states_c, z2_c[:, 0, :]])
 
     elif comp == 'LA2A':
         # peak
         z = tf.keras.layers.Input(batch_shape=(b_size, mini_batch_size, 1), name='params_inputs')
 
-        z_h = tf.keras.layers.Dense(units // 3, name='Dense_cond_h')(z)
-        z_c = tf.keras.layers.Dense(units // 3, name='Dense_cond_c')(z)
+        z_h = tf.keras.layers.Dense(units // 3, name='Dense_cond_h')(z[:, 0, :])
+        z_c = tf.keras.layers.Dense(units // 3, name='Dense_cond_c')(z[:, 0, :])
 
         states_h = tf.keras.layers.Add()([state_h[:, 0, :], z_h])
         states_c = tf.keras.layers.Add()([state_c[:, 0, :], z_c])
         # switch
         z2 = tf.keras.layers.Input(batch_shape=(b_size, mini_batch_size, 1), name='params_inputs2')
-        z2_ = tf.expand_dims(z2, axis=1)
 
-        z2_h = tf.keras.layers.GRU(units // 3, return_sequences=True, stateful=stateful,
-                                   name='GRU_cond_h')(z2_)
-        z2_c = tf.keras.layers.GRU(units // 3, return_sequences=True, stateful=stateful,
-                                   name='GRU_cond_c')(z2_)
+        z2_h = tf.keras.layers.GRU(units // 3, return_sequences=False, stateful=stateful,
+                                   name='GRU_cond_h')(z2)
+        z2_c = tf.keras.layers.GRU(units // 3, return_sequences=False, stateful=stateful,
+                                   name='GRU_cond_c')(z2)
         states_h = tf.keras.layers.Add()([states_h, z2_h])
         states_c = tf.keras.layers.Add()([states_c, z2_c])
 
@@ -76,15 +74,11 @@ def create_model_ED_baseline(mini_batch_size, input_dim, units, b_size=600, comp
     states_c = tf.keras.layers.Dense(units - 1, name='encoder_states_dense_c')(states_c)
     encoder_states = [states_h, states_c]
 
-    decoder_inputs = tf.expand_dims(decoder_inputs, axis=1)
-    x = tf.keras.layers.LSTM(units - 1, return_sequences=True, name='LSTM_decoder')(decoder_inputs, initial_state=encoder_states)
+    x = tf.keras.layers.LSTM(units - 1, return_sequences=False, name='LSTM_decoder')(decoder_inputs, initial_state=encoder_states)
     x = tf.keras.layers.Dense(2, activation='sigmoid', name='DenseLay')(x)
     x = tf.keras.layers.Dense(1)(x)
 
-    if comp == 'CL1B':
-        model = tf.keras.models.Model(inputs=[z, z2, inp], outputs=x, name='LSTM-CNN-ED')
-    elif comp == 'LA2A':
-        model = tf.keras.models.Model(inputs=[z, z2, inp], outputs=x, name='LSTM-CNN-ED')
+    model = tf.keras.models.Model(inputs=[z, z2, inp], outputs=x, name='LSTM-CNN-ED')
 
     model.summary()
 
@@ -109,16 +103,12 @@ def create_model_LSTM_baseline(mini_batch_size, input_dim, b_size=600, comp='', 
         z2 = tf.keras.layers.Input(batch_shape=(b_size, mini_batch_size, 1), name='params_inputs2')
         c = tf.concat([z2, c], axis=-1)
 
-    x = tf.expand_dims(c, axis=1)
     x = tf.keras.layers.LSTM(14, return_sequences=True, stateful=stateful, name='LSTM')(x)
     x = tf.keras.layers.Dense(2)(x)
 
     x = tf.keras.layers.Dense(1, name='OutLayer')(x)
 
-    if comp == 'CL1B':
-        model = tf.keras.models.Model(inputs=[z, z2, inp], outputs=x, name='LSTM16-baseline')
-    elif comp == 'LA2A':
-        model = tf.keras.models.Model(inputs=[z, z2, inp], outputs=x, name='LSTM16-baseline')
+    model = tf.keras.models.Model(inputs=[z, z2, inp], outputs=x, name='LSTM16-baseline')
 
     model.summary()
 
@@ -159,17 +149,13 @@ def create_model_LSTM(mini_batch_size, input_dim, b_size=600, comp='', stateful=
         # switch
         c2 = features
         x = TemporalFiLM(2)(x, c2)
-    ###########
 
     x = tf.keras.layers.LSTM(6, return_sequences=True, stateful=stateful, name='LSTM2')(x)
 
     x = tf.keras.layers.Dense(1, name='OutLayer')(x)
     x = tf.keras.layers.Multiply()([inp[:, -1], x])
 
-    if comp == 'CL1B':
-        model = tf.keras.models.Model(inputs=[z, z2, f, inp], outputs=x, name='LSTM9')
-    elif comp == 'LA2A':
-        model = tf.keras.models.Model(inputs=[z, z2, f, inp], outputs=x, name='LSTM9')
+    model = tf.keras.models.Model(inputs=[z, z2, f, inp], outputs=x, name='LSTM9')
 
     model.summary()
 
@@ -219,15 +205,11 @@ def create_model_ED_CNN(mini_batch_size, input_dim, units, b_size=600, comp='', 
         # switch
         c2 = features
         x = TemporalFiLM(2)(x, c2)
-    ###########
 
     x = tf.keras.layers.Dense(1, name='OutLayer')(x)
     x = tf.keras.layers.Multiply()([inp[:, -1], x])
 
-    if comp == 'CL1B':
-        model = tf.keras.models.Model(inputs=[z, z2, f, inp], outputs=x, name='LSTM-ED')
-    elif comp == 'LA2A':
-        model = tf.keras.models.Model(inputs=[z, z2, f, inp], outputs=x, name='LSTM-ED')
+    model = tf.keras.models.Model(inputs=[z, z2, f, inp], outputs=x, name='LSTM-ED')
 
     model.summary()
 
@@ -268,7 +250,6 @@ def create_model_S4D(mini_batch_size, input_dim, units, b_size=600, comp='', sta
         # switch
         c2 = features
         x = TemporalFiLM(2, stateful=stateful)(x, c2)
-    ###########
 
     x = S4D(model_states=units, model_input_dims=2, batch_size=b_size, mini_batch_size=mini_batch_size, stateful=stateful, hippo=True)(x)
     x = tf.keras.layers.Dense(2, activation=tf.nn.gelu)(x)
@@ -276,10 +257,7 @@ def create_model_S4D(mini_batch_size, input_dim, units, b_size=600, comp='', sta
     x = tf.keras.layers.Dense(1, name='OutLayer')(x)
     x = tf.keras.layers.Multiply()([inp[:, -1], x])
 
-    if comp == 'CL1B':
-        model = tf.keras.models.Model(inputs=[z, z2, f, inp], outputs=x, name='S4D')
-    elif comp == 'LA2A':
-        model = tf.keras.models.Model(inputs=[z, z2, f, inp], outputs=x, name='S4D')
+    model = tf.keras.models.Model(inputs=[z, z2, f, inp], outputs=x, name='S4D')
 
     model.summary()
 
@@ -320,7 +298,6 @@ def create_model_S6(mini_batch_size, input_dim, units, b_size=600, comp='', stat
         # switch
         c2 = features
         x = TemporalFiLM(2, stateful=stateful)(x, c2)
-    ###########
 
     x = S6(model_states=units, model_input_dims=2, batch_size=b_size, mini_batch_size=mini_batch_size, stateful=stateful)(x)
     x = tf.keras.layers.Dense(2, activation=tf.nn.gelu)(x)
@@ -328,10 +305,7 @@ def create_model_S6(mini_batch_size, input_dim, units, b_size=600, comp='', stat
     x = tf.keras.layers.Dense(1, name='OutLayer')(x)
     x = tf.keras.layers.Multiply()([inp[:, -1], x])
 
-    if comp == 'CL1B':
-        model = tf.keras.models.Model(inputs=[z, z2, f, inp], outputs=x, name='S4D')
-    elif comp == 'LA2A':
-        model = tf.keras.models.Model(inputs=[z, z2, f, inp], outputs=x, name='S4D')
+    model = tf.keras.models.Model(inputs=[z, z2, f, inp], outputs=x, name='S4D')
 
     model.summary()
 
@@ -348,7 +322,6 @@ def create_model_Mamba(mini_batch_size, b_size, input_dims=64, model_input_dims=
 
     x = tf.keras.layers.Dense(2, activation=tf.nn.gelu)(x)
 
-    ###########
     f = tf.keras.layers.Input(batch_shape=(b_size, mini_batch_size, 128, 1), name='features_input')
     features = tf.keras.layers.Conv1D(2, 128)(f)
     features = tf.squeeze(features, axis=2)
@@ -376,7 +349,6 @@ def create_model_Mamba(mini_batch_size, b_size, input_dims=64, model_input_dims=
         # switch
         c2 = features
         x = TemporalFiLM(in_size=2, stateful=stateful)(x, c2)
-    ###########
 
     x = MambaLay(model_states=model_states, projection_expand_factor=projection_expand_factor,
                  model_input_dims=model_input_dims,
@@ -388,10 +360,7 @@ def create_model_Mamba(mini_batch_size, b_size, input_dims=64, model_input_dims=
 
     x = tf.keras.layers.Multiply()([inp[:, :, -1:], x])
 
-    if comp == 'CL1B':
-        model = tf.keras.models.Model(inputs=[z, z2, f, inp], outputs=x, name='Mamba')
-    elif comp == 'LA2A':
-        model = tf.keras.models.Model(inputs=[z, z2, f, inp], outputs=x, name='Mamba')
+    model = tf.keras.models.Model(inputs=[z, z2, f, inp], outputs=x, name='Mamba')
     model.summary()
 
     return model
