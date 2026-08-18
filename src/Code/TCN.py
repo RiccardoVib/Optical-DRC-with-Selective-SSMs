@@ -82,7 +82,7 @@ class TCNBlock(tf.keras.layers.Layer):
 
 def create_tcn(nparams, n_inps, nblocks, kernel_size,
                dilation_growth=1, channel_growth=1, channel_width=32,
-               grouped=False, conditional=False):
+               grouped=False):
     inp = tf.keras.layers.Input(shape=(n_inps, 1), name='inputs')
     x = inp
     if nparams > 0:
@@ -101,7 +101,7 @@ def create_tcn(nparams, n_inps, nblocks, kernel_size,
             out_ch = channel_width
         dilation = dilation_growth ** n
 
-        x = TCNBlock(in_ch, out_ch, kernel_size, padding='same', dilation=dilation, grouped=grouped, conditional=conditional)(x, p, n)
+        x = TCNBlock(in_ch, out_ch, kernel_size, padding='same', dilation=dilation, grouped=grouped, conditional=True)(x, p, n)
 
     x = tf.keras.layers.Conv1D(1, kernel_size=1)(x)
 
@@ -115,7 +115,7 @@ def create_tcn(nparams, n_inps, nblocks, kernel_size,
 
 def create_tcn_nocond(n_inps, nblocks, kernel_size,
                dilation_growth=1, channel_growth=1, channel_width=32,
-               grouped=False, conditional=False):
+               grouped=False):
     inp = tf.keras.layers.Input(shape=(n_inps, 1), name='inputs')
     x = inp
 
