@@ -63,8 +63,6 @@ class DataGeneratorPickles(Sequence):
         self._time_steps = (n_samples - self.window) // self.mini_batch_size
         self._example_batches = n_examples // self.batch_size
         self.training_steps = self._time_steps * self._example_batches
-
-        self._reset_iteration()
         self.on_epoch_end()
 
     def prepareXYZ(self, data_dir, filename):
@@ -101,7 +99,6 @@ class DataGeneratorPickles(Sequence):
         """Reset every stateful layer that exposes a reset method."""
         for layer in self.model.layers:
             reset = getattr(layer, "reset_states", None)
-    
             if callable(reset):
                 reset()
                 
@@ -129,7 +126,7 @@ class DataGeneratorPickles(Sequence):
         time_batch_idx = idx % self._time_steps
         
         # Stateful models process each example batch from the first time batch.
-        if time_batch == 0:
+        if time_batch_idx == 0:
             self._reset_model_states()
             
         # Position within the example batches.
