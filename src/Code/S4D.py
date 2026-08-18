@@ -22,6 +22,8 @@ import tensorflow as tf
 from einops import repeat
 import numpy as np
 
+_EPS = tf.constant(1e-12, dtype=tf.float32)
+
 def selective_scan(u, dA, dB, dC, D, last_state=None, stateful=False):
     """Run a complex-valued diagonal SSM scan and return real output."""
     u = tf.cast(u, tf.complex64)
