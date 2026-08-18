@@ -25,6 +25,9 @@ from tensorflow.keras.utils import Sequence
 from scipy.signal.windows import tukey
 import scipy.fft
 
+TUKEY_ALPHA = 5e-6
+FFT_SIZE = 128
+
 class DataGeneratorPicklesCL1B(Sequence):
 
     def __init__(self, data_dir, filename, input_size, mini_batch_size=1, batch_size=9, set='train', model=None):
@@ -61,8 +64,8 @@ class DataGeneratorPicklesCL1B(Sequence):
         x = np.array(Z['x'][:, :], dtype=np.float32)
         y = np.array(Z['y'][: :], dtype=np.float32)
 
-        x = x * np.array(tukey(x.shape[1], alpha=0.000005), dtype=np.float32).reshape(1, -1)
-        y = y * np.array(tukey(x.shape[1], alpha=0.000005), dtype=np.float32).reshape(1, -1)
+        x = x * np.array(tukey(x.shape[1], alpha=TUKEY_ALPHA), dtype=np.float32).reshape(1, -1)
+        y = y * np.array(tukey(x.shape[1], alpha=TUKEY_ALPHA), dtype=np.float32).reshape(1, -1)
 
         if x.shape[0] == 1:
             x = np.repeat(x, y.shape[0], axis=0)
