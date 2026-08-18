@@ -30,6 +30,9 @@ import sys
 import time
 from Utils import has_numbers
 
+COND = TRUE
+FS = 48000
+
 
 def train(**kwargs):
     """
@@ -59,8 +62,6 @@ def train(**kwargs):
     model_name = kwargs.get('model', None)
     epochs = kwargs.get('epochs', [1, 60])
 
-    cond = True
-
     start = time.time()
 
     # set all the seed in case reproducibility is desired
@@ -80,8 +81,7 @@ def train(**kwargs):
     if len(gpu) != 0:
         tf.config.experimental.set_memory_growth(gpu[0], True)
 
-    fs = 48000
-    inp_seg = int(fs*1.5)#300ms
+    inp_seg = int(FS*1.5)#300ms
     out_seg = inp_seg-11999-11-119-1199-4
     window = inp_seg - out_seg
 
@@ -90,8 +90,8 @@ def train(**kwargs):
     ckpt_callback, ckpt_callback_latest, ckpt_dir, ckpt_dir_latest = checkpoints(model_save_dir, save_folder, 0.0)
 
     # create the DataGenerator object to retrieve the data
-    test_gen = data_generator(data_dir, dataset + '_test.pickle', input_size=inp_seg, out_size=out_seg, window=window, cond=cond, batch_size=batch_size)
-    train_gen = data_generator(data_dir, dataset + '_train.pickle', input_size=inp_seg, out_size=out_seg,windoww=window, cond=cond, batch_size=batch_size)
+    test_gen = data_generator(data_dir, dataset + '_test.pickle', input_size=inp_seg, out_size=out_seg, window=window, cond=COND, batch_size=batch_size)
+    train_gen = data_generator(data_dir, dataset + '_train.pickle', input_size=inp_seg, out_size=out_seg,windoww=window, cond=COND, batch_size=batch_size)
 
     # the number of total training steps
     training_steps = train_gen.training_steps*epochs
@@ -99,14 +99,13 @@ def train(**kwargs):
     opt = tf.keras.optimizers.Adam(learning_rate=MyLRScheduler(learning_rate, training_steps), clipnorm=1)
 
     # create the model
-    if cond:
+    if COND:
         model = create_tcn(nparams=nparams, n_inps=inp_seg, nblocks=4, kernel_size=13,
-               dilation_growth=10, channel_growth=1, channel_width=32,
-               conditional=cond)
+               dilation_growth=10, channel_growth=1, channel_width=32)
     else:
         model = create_tcn_nocond(n_inps=inp_seg, nblocks=4, kernel_size=13,
-               dilation_growth=10, channel_growth=1, channel_width=32,
-               conditional=cond)
+               dilation_growth=10, channel_growth=1, channel_width=32)
+        
     # compile the model with the optimizer and selected loss function
     losses = 'mse'
     model.compile(loss=losses, optimizer=opt)
