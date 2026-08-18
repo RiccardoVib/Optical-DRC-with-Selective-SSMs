@@ -22,45 +22,45 @@ import tensorflow as tf
 from einops import repeat
 import numpy as np
 
+def selective_scan(u, dA, dB, dC, D, last_state=None, stateful=False):
+    """Run a complex-valued diagonal SSM scan and return real output."""
+    u = tf.cast(u, tf.complex64)
+    dA = tf.cast(dA, tf.complex64)
+    dB = tf.cast(dB, tf.complex64)
+    dC = tf.cast(dC, tf.complex64)
+    D = tf.cast(D, tf.complex64)
 
-def selective_scan(u, dA, dB, dC, D, last_state, stateful):
+    dB_u = tf.einsum("bld,bldn->bldn", u, dB)
+    padded_dA = tf.pad(dA[:, 1:], [[0, 0], [1, 0], [0, 0], [0, 0]])  # put zero at fist instant
+    cumulative_A = tf.math.cumsum(padded_dA, axis=1)  # 0, A, 2A ..
+    cumulative_A_exp = tf.exp(cumulative_A)  # 1, e^A, e^2A, .... -> 1, A, A^2 ...
+    states = tf.cumsum(dB_u / (cumulative_A_exp + tf.cast(_EPS, tf.complex64)), axis=1)
+    states = states * cumulative_A_exp
 
-    ub = u
-    dB_u = tf.einsum('bld,bldn->bldn', ub, dB)
+    if stateful and last_state is not None:
+        initial_A = tf.exp(tf.cumsum(dA, axis=1))
+        states = states + initial_A * tf.cast(last_state[:, None], tf.complex64)
 
-    dA_cumsum = tf.pad(dA[:, 1:], [[0, 0], [1, 0], [0, 0], [0, 0]])  # put zero at fist instant
-    dA_cumsum = tf.math.cumsum(dA_cumsum, axis=1)  # 0, A, 2A ..
-    dA_cumsum = tf.exp(dA_cumsum)  # 1, e^A, e^2A, .... -> 1, A, A^2 ...
-
-    x = dB_u / (dA_cumsum + 1e-12)
-    x = tf.math.cumsum(x, axis=1) * dA_cumsum
-
-    if stateful:
-        dA_cumsum_l = tf.math.cumsum(dA, axis=1)
-        dA_cumsum_l = tf.exp(dA_cumsum_l)
-        dA_cumsum_l *= tf.expand_dims(last_state, axis=1)
-        x = x + dA_cumsum_l
-
-    last_state = x[:, -1]
-    y = tf.einsum('bldn,bln->bld', x, dC)
-
-    return y + u * D, last_state
-
+    final_state = states[:, -1]
+    output = tf.einsum("bldn,bln->bld", states, dC)
+    output = output + u * D
+    return tf.math.real(output), final_state
+    
 
 class S4D(tf.keras.layers.Layer):
     def __init__(self, model_states, model_input_dims, batch_size, mini_batch_size, stateful, hippo, dt_min=0.001,
                  dt_max=0.1):
         super(S4D, self).__init__()
 
-        self.state = None
-        self.dt_min = dt_min
-        self.dt_max = dt_max
-        self.hippo = hippo
-        self.model_input_dims = model_input_dims
-        self.model_states = model_states
+        self.model_states = int(model_states)
+        self.model_input_dims = int(model_input_dims)
         self.batch_size = batch_size
         self.mini_batch_size = mini_batch_size
-        self.stateful = stateful
+        self.stateful = bool(stateful)
+        self.hippo = hippo
+        self.dt_min = float(dt_min)
+        self.dt_max = float(dt_max)
+        self._state = None
 
         log_A_real = tf.math.log(tf.constant(0.5 * tf.ones((self.model_input_dims, self.model_states))))
         A_imag = tf.constant(np.pi) * repeat(np.arange(model_states), 'n -> h n', h=self.model_input_dims)
@@ -85,43 +85,60 @@ class S4D(tf.keras.layers.Layer):
             np.ones(self.model_input_dims),
             trainable=True, dtype=tf.float32)
 
-        # u = tf.Variable(tf.random.normal([self.batch_size, self.mini_batch_size, 1]), dtype='float32')
         self.reset_states()
 
+    def _ensure_state(self, batch_size):
+        if batch_size is None:
+            return None
+        shape = (int(batch_size), self.model_input_dims, self.model_states)
+        if self._state is None or self._state.shape != tf.TensorShape(shape):
+            self._state = self.add_weight(
+                name="state",
+                shape=shape,
+                initializer="zeros",
+                trainable=False,
+            )
+        return self._state
+           
     def reset_states(self):
-        self.state = tf.Variable(
-            tf.zeros((self.batch_size, self.model_input_dims, self.model_states), dtype=tf.float32), name='state',
-            trainable=False)
+        if self._state is not None:
+            self._state.assign(tf.zeros_like(self._state))
 
     def call(self, u):
-        last_state = self.state[:self.batch_size]
-        res_state = self.state[self.batch_size:]
-
-        y, y_state = self.ssm(u, last_state=last_state, stateful=self.stateful)
-
-        if self.stateful:
-            self.state.assign(tf.concat([y_state, res_state], axis=0))
-        return y
-
-    def ssm(self, u, last_state, stateful):
-
+        
         Lambda = tf.cast(tf.complex(-tf.exp(self.log_A_real), self.A_imag), dtype=tf.complex64)
 
         C = tf.complex(self.C[..., 0], self.C[..., 1])
         B = tf.complex(self.B[..., 0], self.B[..., 1])
-
         step = tf.cast(tf.exp(self.log_dt), dtype=tf.complex64)
+       
+        dA = Lambda * step # (H N)
+        dB = B * tf.math.expm1(dA) / Lambda
 
-        dA = Lambda * step  # (H N)
-        dB = B * (tf.exp(dA) - 1.) / Lambda
-
-        dA = tf.tile(tf.reshape(dA, [1, 1, self.model_input_dims, self.model_states]),
-                     [self.batch_size, self.mini_batch_size, 1, 1])
-        dB = tf.tile(tf.reshape(dB, [1, 1, self.model_input_dims, self.model_states]),
-                     [self.batch_size, self.mini_batch_size, 1, 1])
-        C = tf.tile(tf.reshape(C, [1, 1, self.model_states]), [self.batch_size, self.mini_batch_size, 1])
-        D = self.D
-
-        y, y_state = selective_scan(u, dA, dB, C, D, last_state, stateful)
-
-        return y, y_state
+        batch = tf.shape(u)[0]
+        length = tf.shape(u)[1]
+        dA = tf.broadcast_to(
+            dA[None, None, :, :],
+            [batch, length, self.model_input_dims, self.model_states],
+        )
+        dB = tf.broadcast_to(
+            dB[None, None, :, :],
+            [batch, length, self.model_input_dims, self.model_states],
+        )
+        dC = tf.broadcast_to(
+            C[None, None, :, :],
+            [batch, length, self.model_states],
+        )
+        
+        output, final_state = selective_scan(
+            u,
+            dA,
+            dB,
+            dC,
+            self.D,
+            state,
+            self.stateful,
+        )
+        if self.stateful and state is not None:
+            state.assign(final_state)
+        return output
