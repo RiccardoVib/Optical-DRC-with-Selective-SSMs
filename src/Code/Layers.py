@@ -20,6 +20,21 @@
 
 import tensorflow as tf
 
+class GLU(tf.keras.layers.Layer):
+    """Gated linear unit: ``GLU(x) = a * softsign(b)`` with ``[a, b] = W x``. """
+ 
+    def __init__(self, in_size, bias=True, dim=-1, **kwargs):
+        super(GLU, self).__init__(**kwargs)
+        self.in_size = in_size
+        self.bias = bias
+        self.dim = dim
+        self.dense = tf.keras.layers.Dense(self.in_size * 2, use_bias=bias)
+ 
+    def call(self, x):
+        x = self.dense(x)
+        a, b = tf.split(x, 2, axis=self.dim)
+        return tf.multiply(a, tf.nn.softsign(b))
+        
 class FiLM(tf.keras.layers.Layer):
     def __init__(self, in_size, bias=True, dim=-1, **kwargs):
         super(FiLM, self).__init__(**kwargs)
