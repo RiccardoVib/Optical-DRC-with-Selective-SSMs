@@ -71,10 +71,8 @@ def train(**kwargs):
     # load the data generator according to the type of dataset
     if comp == 'CL1B':
         data_generator = DataGeneratorPicklesCL1B
-        nparams = 4
     elif comp == 'LA2A':
         data_generator = DataGeneratorPicklesLA2A
-        nparams = 2
 
     # check if GPUs are available and set the memory growing
     print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
@@ -85,22 +83,15 @@ def train(**kwargs):
     fs = 48000
     inp_seg = int(fs*1.5)#300ms
     out_seg = inp_seg-11999-11-119-1199-4
-    w = inp_seg - out_seg
+    window = inp_seg - out_seg
 
     # define callbacks: where to store the weights
     callbacks = []
     ckpt_callback, ckpt_callback_latest, ckpt_dir, ckpt_dir_latest = checkpoints(model_save_dir, save_folder, 0.0)
 
-    # to load the right test set
-    dataset_test = dataset
-    while has_numbers(dataset_test[8:]):
-        dataset_test = dataset_test[:-1]
-
-    # load the datasets
-
     # create the DataGenerator object to retrieve the data
-    test_gen = data_generator(data_dir, dataset_test + '_train.pickle', input_size=inp_seg, o=out_seg, w=w, cond=cond, batch_size=batch_size)
-    train_gen = data_generator(data_dir, dataset + '_train.pickle', input_size=inp_seg, o=out_seg, w=w, cond=cond, batch_size=batch_size)
+    test_gen = data_generator(data_dir, dataset + '_test.pickle', input_size=inp_seg, out_size=out_seg, window=window, cond=cond, batch_size=batch_size)
+    train_gen = data_generator(data_dir, dataset + '_train.pickle', input_size=inp_seg, out_size=out_seg,windoww=window, cond=cond, batch_size=batch_size)
 
     # the number of total training steps
     training_steps = train_gen.training_steps*epochs
