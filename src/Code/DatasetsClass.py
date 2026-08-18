@@ -28,7 +28,8 @@ import scipy.fft
 TUKEY_ALPHA = 5e-6
 FFT_SIZE = 128
 
-class DataGeneratorPicklesCL1B(Sequence):
+class DataGeneratorPickles(Sequence):
+    _z_channels = 2
 
     def __init__(self, data_dir, filename, input_size, mini_batch_size=1, batch_size=9, set='train', model=None):
         """
@@ -47,22 +48,37 @@ class DataGeneratorPicklesCL1B(Sequence):
         self.set = set
 
         self.x, self.y, self.z = self.prepareXYZ(data_dir, filename)
-        assert self.x.shape[0] % self.batch_size == 0
+        n_examples, n_samples = self.x.shape
+        if n_examples % self.batch_size:
+            raise ValueError(
+                f"Number of examples ({n_examples}) must be divisible by "
+                f"batch_size ({self.batch_size})."
+            )
+        if n_samples <= self.window:
+            raise ValueError(
+                f"The data contain {n_samples} samples, but input_size is "
+                f"{self.window}; at least one window is required."
+            )
 
-        self.idj = 0
-        self.idx = -1
+        self._time_steps = (n_samples - self.window) // self.mini_batch_size
+        self._example_batches = n_examples // self.batch_size
+        self.training_steps = self._time_steps * self._example_batches
 
-        self.max_1 = (self.x.shape[1] // self.mini_batch_size)
-        self.max_2 = (self.x.shape[0] // self.batch_size)
-        self.max = self.max_1 * self.max_2
-        self.training_steps = self.max
+        self._reset_iteration()
         self.on_epoch_end()
 
     def prepareXYZ(self, data_dir, filename):
-        file_data = open(os.path.normpath('/'.join([data_dir, filename])), 'rb')
-        Z = pickle.load(file_data)
-        x = np.array(Z['x'][:, :], dtype=np.float32)
-        y = np.array(Z['y'][: :], dtype=np.float32)
+        path = os.path.join(data_dir, filename)
+        with open(path, "rb") as file_data:
+            data = pickle.load(file_data)
+
+        try:
+            x = np.asarray(data["x"], dtype=np.float32)
+            y = np.asarray(data["y"], dtype=np.float32)
+            z = np.asarray(data["z"], dtype=np.float32)
+        except KeyError as exc:
+            raise KeyError(f"Missing required dataset key: {exc.args[0]}") from exc
+            
 
         x = x * np.array(tukey(x.shape[1], alpha=TUKEY_ALPHA), dtype=np.float32).reshape(1, -1)
         y = y * np.array(tukey(x.shape[1], alpha=TUKEY_ALPHA), dtype=np.float32).reshape(1, -1)
@@ -70,32 +86,35 @@ class DataGeneratorPicklesCL1B(Sequence):
         if x.shape[0] == 1:
             x = np.repeat(x, y.shape[0], axis=0)
 
-        z = np.array(Z['z'], dtype=np.float32)
-        del Z
+        usable_samples = self.window + ((x.shape[1] - self.window) // self.mini_batch_size) * self.mini_batch_size
+        if usable_samples <= self.window:
+            raise ValueError("No complete mini-batch can be formed from the data.")
 
-        rep = x.shape[1]
-
-        N = int((x.shape[1] - self.window) / self.mini_batch_size) #how many iteration
-        lim = int(N * self.mini_batch_size) #how many samples
-        x = x[:, :lim]
-        y = y[:, :lim]
+        x = x[:, :usable_samples]
+        y = y[:, :usable_samples]
         if z.shape[0] < z.shape[1]:
             z = z.T
-        z = np.repeat(z[:,np.newaxis,:], rep, axis=1)
-
+        z = np.repeat(z[:, None, :], usable_samples, axis=1)
         return x, y, z
 
+    def _reset_model_states(self):
+        """Reset every stateful layer that exposes a reset method."""
+        for layer in self.model.layers:
+            reset = getattr(layer, "reset_states", None)
+    
+            if reset is None:
+                reset = getattr(layer, "reset_states", None)
+    
+            if callable(reset):
+                reset()
+                
     def on_epoch_end(self):
         self.indices = np.arange(self.window, self.x.shape[1])
-        self.indices2 = np.arange(-1, self.x.shape[0])
-        self.idj = 0
-        self.idx = -1
-        self.model.layers[4].reset_states()
-        self.model.layers[12].reset_states()
-        self.model.layers[13].reset_states()
+        self.indices2 = np.arange(self.x.shape[0])
+        self._reset_model_states()
 
     def __len__(self):
-        return int(self.max)
+        return int(self.training_steps)
 
     def __call__(self):
         for i in range(self.__len__()):
@@ -104,141 +123,85 @@ class DataGeneratorPicklesCL1B(Sequence):
                 self.on_epoch_end()
 
     def __getitem__(self, idx):
-        ## Initializing Batch
-        X = np.zeros((self.batch_size, self.mini_batch_size, self.window))
-        Y = np.zeros((self.batch_size, self.mini_batch_size, 1))
-        Z = np.zeros((self.batch_size, self.mini_batch_size, 4))
-
-        if idx % self.max_1 - 1 == 0:
-            self.idj += 1
-            self.idx = -1
-            self.model.layers[4].reset_states()
-            self.model.layers[12].reset_states()
-            self.model.layers[13].reset_states()
-        self.idx += 1
-
-        # get the indices of the requested batch
-        indices = self.indices[self.idx*self.mini_batch_size:(self.idx+1)*self.mini_batch_size]
-        indices2 = self.indices2[self.idj*self.batch_size:(self.idj+1)*self.batch_size]
-        c = 0
-
-        for t in range(indices[0], indices[-1]+1, 1):
-            X[:, c, :] = np.array(self.x[indices2, t - self.window: t])
-            Y[:, c, :] = np.array(self.y[indices2, t-1:t])
-            Z[:, c, :] = np.array(self.z[indices2, t-1])
-            c = c + 1
-
-        Z1 = Z[:, :, :2]
-        Z2 = Z[:, :, 2:]
-
-        Xf = np.abs(scipy.fft.rfft(X, n=(8*32)-1))
-
-        return [Z1, Z2, Xf, X], Y
-
-class DataGeneratorPicklesLA2A(Sequence):
-
-    def __init__(self, data_dir, filename, input_size, mini_batch_size=1, batch_size=9, set='train', model=None):
-        """
-        Initializes a data generator object
-          :param data_dir: the directory in which data are stored
-          :param output_size: output size
-          :param batch_size: The size of each batch returned by __getitem__
-        """
-
-        self.data_dir = data_dir
-        self.filename = filename
-        self.batch_size = batch_size
-        self.mini_batch_size = mini_batch_size
-        self.window = input_size
-        self.model = model
-        self.set = set
-
-        self.x, self.y, self.z = self.prepareXYZ(data_dir, filename)
-        assert self.x.shape[0] % self.batch_size == 0
-
-        self.idj = 0
-        self.idx = -1
-
-        self.max_1 = (self.x.shape[1] // self.mini_batch_size)
-        self.max_2 = (self.x.shape[0] // self.batch_size)
-        self.max = self.max_1 * self.max_2
-        self.training_steps = self.max
-        self.on_epoch_end()
-
-    def prepareXYZ(self, data_dir, filename):
-        file_data = open(os.path.normpath('/'.join([data_dir, filename])), 'rb')
-        Z = pickle.load(file_data)
-        x = np.array(Z['x'][:, :], dtype=np.float32)
-        y = np.array(Z['y'][: :], dtype=np.float32)
-
-        x = x * np.array(tukey(x.shape[1], alpha=0.000005), dtype=np.float32).reshape(1, -1)
-        y = y * np.array(tukey(x.shape[1], alpha=0.000005), dtype=np.float32).reshape(1, -1)
-
-        if x.shape[0] == 1:
-            x = np.repeat(x, y.shape[0], axis=0)
-
-        z = np.array(Z['z'], dtype=np.float32)
-        del Z
-
-        rep = x.shape[1]
-
-        N = int((x.shape[1] - self.window) / self.mini_batch_size) #how many iteration
-        lim = int(N * self.mini_batch_size) #how many samples
-        x = x[:, :lim]
-        y = y[:, :lim]
-        if z.shape[0] < z.shape[1]:
-            z = z.T
-        z = np.repeat(z[:,np.newaxis,:], rep, axis=1)
-
-        return x, y, z
-
-    def on_epoch_end(self):
-        self.indices = np.arange(self.window, self.x.shape[1])
-        self.indices2 = np.arange(-1, self.x.shape[0])
-        self.idj = 0
-        self.idx = -1
-        self.model.layers[4].reset_states()
-        self.model.layers[12].reset_states()
-        self.model.layers[13].reset_states()
-
-    def __len__(self):
-        return int(self.max)
-
-    def __call__(self):
-        for i in range(self.__len__()):
-            yield self.__getitem__(i)
-            if i == self.__len__() - 1:
-                self.on_epoch_end()
-
-    def __getitem__(self, idx):
-        ## Initializing Batch
-        X = np.zeros((self.batch_size, self.mini_batch_size, self.window))
-        Y = np.zeros((self.batch_size, self.mini_batch_size, 1))
-        Z = np.zeros((self.batch_size, self.mini_batch_size, 4))
-
-        if idx % self.max_1 - 1 == 0:
-            self.idj += 1
-            self.idx = -1
-            self.model.layers[4].reset_states()
-            self.model.layers[12].reset_states()
-            self.model.layers[13].reset_states()
-        self.idx += 1
-
-        # get the indices of the requested batch
-        indices = self.indices[self.idx*self.mini_batch_size:(self.idx+1)*self.mini_batch_size]
-        indices2 = self.indices2[self.idj*self.batch_size:(self.idj+1)*self.batch_size]
-        c = 0
-
-        for t in range(indices[0], indices[-1]+1, 1):
-            X[:, c, :] = np.array(self.x[indices2, t - self.window: t])
-            Y[:, c, :] = np.array(self.y[indices2, t-1:t])
-            Z[:, c, :] = np.array(self.z[indices2, t-1])
-            c = c + 1
-
-        Z1 = Z[:, :1]
-        Z2 = Z[:, 1:]
+        if not 0 <= idx < len(self):
+            raise IndexError(
+                f"Batch index {idx} is out of range for dataset of length {len(self)}."
+            )
+    
+        # Position within the temporal sequence.
+        time_batch_idx = idx % self._time_steps
         
-        Xf = np.abs(scipy.fft.rfft(X, n=(8 * 32) - 1))
-
+        # Stateful models process each example batch from the first time batch.
+        if time_batch == 0:
+            self._reset_model_states()
+            
+        # Position within the example batches.
+        example_batch_idx = idx // self._time_steps
+    
+        time_start = time_batch_idx * self.mini_batch_size
+        example_start = example_batch_idx * self.batch_size
+    
+        time_indices = self.indices[
+            time_start : time_start + self.mini_batch_size
+        ]
+    
+        example_indices = self.indices2[
+            example_start : example_start + self.batch_size
+        ]
+    
+        if len(time_indices) != self.mini_batch_size:
+            raise RuntimeError("Incomplete temporal mini-batch.")
+    
+        if len(example_indices) != self.batch_size:
+            raise RuntimeError("Incomplete example batch.")
+    
+        X = np.stack(
+            [
+                self.x[
+                    example_indices,
+                    t - self.window : t
+                ]
+                for t in time_indices
+            ],
+            axis=1,
+        ).astype(np.float32, copy=False)
+    
+        Y = np.stack(
+            [
+                self.y[example_indices, t - 1]
+                for t in time_indices
+            ],
+            axis=1,
+        )[..., None].astype(np.float32, copy=False)
+    
+        Z = np.stack(
+            [
+                self.z[example_indices, t - 1]
+                for t in time_indices
+            ],
+            axis=1,
+        ).astype(np.float32, copy=False)
+    
+        Z1 = Z[:, :, :self._z_channels] #ratio and threshold
+        Z2 = Z[:, :, self._z_channels:] #attach and release
+    
+        Xf = np.abs(
+            scipy.fft.rfft(
+                X,
+                n=FFT_SIZE,
+                axis=-1,
+            )
+        ).astype(np.float32, copy=False)
+    
         return [Z1, Z2, Xf, X], Y
 
+class DataGeneratorPicklesCL1B(_PickleSequence):
+    """Generator for CL1B data; preserves the original four-input interface."""
+
+    _z_channels = 2
+
+
+class DataGeneratorPicklesLA2A(_PickleSequence):
+    """Generator for LA2A data; preserves the original four-input interface."""
+
+    _z_channels = 1
