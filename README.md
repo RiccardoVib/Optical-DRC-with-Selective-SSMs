@@ -1,7 +1,7 @@
-# Modeling Time-Variant Responses of Optical Compressors With Selective State Space Models
+# Modeling Time-Dependent Responses of Optical Compressors With Selective State Space Models
 
 
-This code repository for the article _Modeling Time-Variant Responses of Optical Compression with Selective State Space Models, Journal of the Audio Engineering Society, 2025 March - Volume 73 Number 3.
+This code repository is for the article _Modeling Time-Dependent Responses of Optical Compression with Selective State Space Models, Journal of the Audio Engineering Society, 2025 March - Volume 73 Number 3.
 
 This repository contains all the necessary utilities to use our architectures. Find the code located inside the "./Code" folder, and the weights of pre-trained models inside the "./Weights" folder
 
